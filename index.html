@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-6 Unit Plan Generator (Interactive & Enhanced - Syntax Fix)</title>
+    <title>K-6 Unit Plan Generator (Interactive & Enhanced - Syntax Fix v2)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -279,7 +279,6 @@
         "4-6": "Focus on 'Intentional Strategist to Reflective Adapter' (4-5) and moving towards 'Independent Regulator to Autonomous Problem-Solver' (6th). Students apply strategies, reflect on behavior. Socially, 'Social Navigator to Empathetic Ally', forming friendships, resolving conflicts. Language is 'Contextual Communicator to Purposeful Speaker', adapting language and discussing with intent. (Note: 6-8 in source docs, this generator stops at 4-6 so focuses on the earlier parts of this range)."
     };
 
-    // --- Utility Functions (Ensure these are globally accessible or passed correctly) ---
     function getRandomElement(arr) {
         if (!arr || arr.length === 0) return "";
         return arr[Math.floor(Math.random() * arr.length)];
@@ -330,8 +329,6 @@
         return skills.slice(0, -1).join(', ') + ', and ' + skills.slice(-1);
     }
 
-
-    // --- Core Script Logic ---
     try { 
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DEBUG: DOM Content Loaded. Initializing script...");
@@ -358,17 +355,14 @@
             console.log("DEBUG: behSkillsContainer element:", behSkillsContainer);
             if (!skillTooltip) console.error("DEBUG: CRITICAL - Skill Tooltip element ('skillTooltip') NOT FOUND.");
 
-
             function populateSkillCheckboxes(container, skills, groupName, colorClass) {
                 if (!container) {
                     console.error(`DEBUG: Container for ${groupName} is null or undefined. Cannot populate checkboxes.`);
-                    const errorContainer = document.getElementById(container === efSkillsContainer ? 'efSkillsContainer' : 'behSkillsContainer');
-                    if(errorContainer) {
-                         errorContainer.innerHTML = `<p style="color: red; font-weight: bold;">Error: Could not find container element for ${groupName}.</p>`;
-                    }
+                    const elById = document.getElementById(groupName === 'efSkills' ? 'efSkillsContainer' : 'behSkillsContainer');
+                    if(elById) elById.innerHTML = `<p style="color: red; font-weight: bold;">Error: Container element for ${groupName} not found by script variable.</p>`;
                     return;
                 }
-                console.log(`DEBUG: Populating checkboxes for ${groupName} in container:`, container);
+                console.log(`DEBUG: Populating checkboxes for ${groupName} in container:`, container.id);
                 container.innerHTML = ''; 
                 if (!skills || !Array.isArray(skills) || skills.length === 0) {
                     console.warn(`DEBUG: No valid skills array provided for ${groupName}. Skills:`, skills);
@@ -378,9 +372,9 @@
 
                 try {
                     skills.forEach((skill, index) => {
-                        if (typeof skill !== 'object' || !skill.value || !skill.display) {
+                        if (typeof skill !== 'object' || typeof skill.value !== 'string' || typeof skill.display !== 'string') {
                             console.warn(`DEBUG: Invalid skill item at index ${index} for ${groupName}:`, skill);
-                            return; // Skip this invalid item
+                            return; 
                         }
                         const label = document.createElement('label');
                         label.className = `flex items-center space-x-3 p-2 rounded-md hover:bg-${colorClass}-50 transition-colors duration-150`;
@@ -389,14 +383,13 @@
                         input.type = 'checkbox';
                         input.name = groupName;
                         input.value = skill.value;
-                        input.id = `${groupName}_${skill.value.replace(/\s+/g, '_')}_${index}`; // More robust unique ID
+                        input.id = `${groupName}_${skill.value.replace(/\s+/g, '_').replace(/[()]/g, '')}_${index}`; // Sanitize ID
                         input.className = `form-checkbox h-5 w-5 text-${colorClass}-600 border-slate-400 rounded focus:ring-${colorClass}-500`;
                         input.addEventListener('change', updatePrimarySkillDropdowns);
 
                         const span = document.createElement('span');
                         span.className = 'text-slate-700';
                         span.textContent = skill.display;
-                        // No setAttribute('for') here as label wraps input, or use unique IDs
 
                         const tooltipTrigger = document.createElement('span');
                         tooltipTrigger.className = 'tooltip-trigger';
@@ -432,10 +425,10 @@
             }
             
             if (efSkillsContainer) populateSkillCheckboxes(efSkillsContainer, ALL_EF_SKILLS, 'efSkills', 'sky');
-            else console.error("DEBUG: EF Skills Container (efSkillsContainer) NOT FOUND in DOM. Cannot populate.");
+            else console.error("DEBUG: EF Skills Container (efSkillsContainer) NOT FOUND in DOM during call. Cannot populate.");
             
             if (behSkillsContainer) populateSkillCheckboxes(behSkillsContainer, ALL_BEH_SKILLS, 'behSkills', 'rose');
-            else console.error("DEBUG: Behavior Skills Container (behSkillsContainer) NOT FOUND in DOM. Cannot populate.");
+            else console.error("DEBUG: Behavior Skills Container (behSkillsContainer) NOT FOUND in DOM during call. Cannot populate.");
             
             updatePrimarySkillDropdowns();
 
@@ -579,120 +572,69 @@
                 });
             } else { console.error("DEBUG: Generate button not found");}
 
-            // --- Main Content Generation Functions (PLACEHOLDER - Insert full enhanced functions here) ---
+            // --- Main Content Generation Functions ---
             function generateUnitPlanContent(gradeLevel, efSkills, behSkills, numWeeks, lessonsPerWeekCount, primarySkills, studentInterests, preferredModalities) {
                 console.log("DEBUG: generateUnitPlanContent function started.");
-                // This function should contain the full logic from the previous "Corrected" response.
-                // For brevity, only a snippet is shown here. Ensure the full logic is used.
-                let html = `<h2 class="text-2xl font-bold text-sky-700 mb-3">Unit Plan (Content from generateUnitPlanContent)</h2>`;
-                html += `<p>Grade: ${gradeLevel}, Weeks: ${numWeeks}</p>`;
-                html += `<p>EF Skills: ${efSkills.join(', ') || 'None'}</p>`;
-                html += `<p>Behavior Skills: ${behSkills.join(', ') || 'None'}</p>`;
-                // ... Add full content generation logic here ...
-                 // --- START of previously provided enhanced functions (abbreviated here for clarity of focus on the fix)
                 const allSelectedSkillsRaw = [...efSkills, ...behSkills];
-            
+                let html = ``;
                 const primarySkillForTitle = primarySkills.length > 0 ? generateUniqueSkillName(primarySkills[0]) : (allSelectedSkillsRaw.length > 0 ? generateUniqueSkillName(allSelectedSkillsRaw[0]) : "Key");
                 let interestThemeTitleSegment = "";
                 if (studentInterests.length > 0) {
                     const capitalizedInterests = studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1));
                     interestThemeTitleSegment = ` with a Focus on ${capitalizedInterests.join(' & ')} Themes`;
                 }
-                html = `<h2 class="text-2xl font-bold text-sky-700 mb-3">Unit Title: Strengthening ${primarySkillForTitle} and Related SEL Skills${interestThemeTitleSegment}</h2>`; // Reset html here
-                
+                html = `<h2 class="text-2xl font-bold text-sky-700 mb-3">Unit Title: Strengthening ${primarySkillForTitle} and Related SEL Skills${interestThemeTitleSegment}</h2>`;
                 html += `<p><strong>Grade Range:</strong> ${gradeLevel}</p>`;
                 html += `<p><strong>Focus Executive Functioning Skills:</strong> ${efSkills.length > 0 ? generateSkillList(efSkills) : "None selected"}</p>`;
                 html += `<p><strong>Focus Behavioral Skills:</strong> ${behSkills.length > 0 ? generateSkillList(behSkills) : "None selected"}</p>`;
-                if (primarySkills.length > 0) {
-                    html += `<p><strong>Primary Focus Skill(s):</strong> ${generateSkillList(primarySkills)}</p>`;
-                }
-                if (studentInterests.length > 0) {
-                    html += `<p><strong>Student Interests Considered:</strong> ${studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ')}</p>`;
-                }
-                if (preferredModalities.length > 0) {
-                    html += `<p><strong>Preferred Teaching Modalities Considered:</strong> ${preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()).join(', ')}</p>`;
-                }
-
+                if (primarySkills.length > 0) { html += `<p><strong>Primary Focus Skill(s):</strong> ${generateSkillList(primarySkills)}</p>`; }
+                if (studentInterests.length > 0) { html += `<p><strong>Student Interests Considered:</strong> ${studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ')}</p>`; }
+                if (preferredModalities.length > 0) { html += `<p><strong>Preferred Teaching Modalities Considered:</strong> ${preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()).join(', ')}</p>`; }
                 const allSelCompetenciesForUnit = [...new Set(allSelectedSkillsRaw.flatMap(skill => getAssociatedSECompetencies(skill)))];
                 html += `<p><strong>Associated SEL Competencies:</strong> ${allSelCompetenciesForUnit.join(', ')}</p>`;
                 html += `<p><strong>Duration:</strong> ${numWeeks} weeks (${lessonsPerWeekCount} sessions per week, approx. 30 min each)</p>`;
                 const developmentalNoteForGrade = DEVELOPMENTAL_NOTES[gradeLevel] || "Ensure activities are developmentally appropriate for the selected grade range.";
                 html += `<p class="text-sm italic text-slate-500 mt-1"><strong>Developmental Note (${gradeLevel}):</strong> ${developmentalNoteForGrade}</p>`;
-
-
                 html += `<h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Unit Overview & Outcomes</h3>`;
                 const focusSkillsText = generateSkillList(allSelectedSkillsRaw);
                 const overviewInterestsText = studentInterests.length > 0 ? studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ') : 'various engaging themes';
                 html += `<p>This ${numWeeks}-week unit focuses on developing students' ${focusSkillsText}. Executive functioning and behavioral skills are crucial for academic success, social-emotional well-being, and effective self-regulation. This unit aims to enhance these abilities through targeted activities that are engaging, developmentally appropriate for students in ${gradeLevel}, and incorporates student interests like ${overviewInterestsText}. ${primarySkills.length > 0 ? `Special emphasis will be placed on ${generateSkillList(primarySkills)}.` : ''}</p>`;
-                html += `<p><strong>Key Outcomes:</strong> By the end of this unit, students will be better able to:</p>
-                            <ul class="list-disc list-inside pl-4 text-sm">
-                                <li>Understand the importance of ${focusSkillsText.toLowerCase()} in daily life, including how they relate to their interests.</li>
-                                <li>Apply practical strategies related to ${focusSkillsText.toLowerCase()} in classroom and social settings, using preferred learning styles where possible.</li>
-                                <li>Demonstrate growth in associated Social-Emotional Learning (SEL) competencies such as ${allSelCompetenciesForUnit.join(', ').toLowerCase()}.</li>
-                                <li>Reflect on their own skill development and identify areas for continued practice.</li>
-                            </ul>`;
-
+                html += `<p><strong>Key Outcomes:</strong> By the end of this unit, students will be better able to:</p> <ul class="list-disc list-inside pl-4 text-sm"> <li>Understand the importance of ${focusSkillsText.toLowerCase()} in daily life, including how they relate to their interests.</li> <li>Apply practical strategies related to ${focusSkillsText.toLowerCase()} in classroom and social settings, using preferred learning styles where possible.</li> <li>Demonstrate growth in associated Social-Emotional Learning (SEL) competencies such as ${allSelCompetenciesForUnit.join(', ').toLowerCase()}.</li> <li>Reflect on their own skill development and identify areas for continued practice.</li> </ul>`;
                 let availableSkillsForRotation = [...allSelectedSkillsRaw];
-                if (primarySkills.length > 0) { 
-                    availableSkillsForRotation = [...primarySkills, ...allSelectedSkillsRaw.filter(s => !primarySkills.includes(s))];
-                }
-                
+                if (primarySkills.length > 0) { availableSkillsForRotation = [...primarySkills, ...allSelectedSkillsRaw.filter(s => !primarySkills.includes(s))]; }
                 for (let i = 1; i <= numWeeks; i++) { 
                     html += `<div class="mt-6 pt-4 border-t border-slate-300 page-break">`; 
                     let weeklyThemeSkillsRaw = [];
-                    
                     if (availableSkillsForRotation.length > 0) {
                         weeklyThemeSkillsRaw.push(availableSkillsForRotation[ ( (i-1) * 2 ) % availableSkillsForRotation.length]);
                         if (availableSkillsForRotation.length > 1 && weeklyThemeSkillsRaw.length < 2) {
                             let secondSkillCandidate = availableSkillsForRotation[ ( (i-1) * 2 + 1) % availableSkillsForRotation.length];
-                            if (secondSkillCandidate !== weeklyThemeSkillsRaw[0]) { 
-                                weeklyThemeSkillsRaw.push(secondSkillCandidate);
-                            } else if (availableSkillsForRotation.length > 2 && availableSkillsForRotation.length > weeklyThemeSkillsRaw.length) { 
-                                weeklyThemeSkillsRaw.push(availableSkillsForRotation[ ( (i-1) * 2 + 2) % availableSkillsForRotation.length]);
-                            } else if (availableSkillsForRotation.length === 2 && secondSkillCandidate === weeklyThemeSkillsRaw[0] && weeklyThemeSkillsRaw.length === 1) {
-                                // This case can lead to infinite loop if not handled, or single skill if only one different available.
-                                // Just ensure it's unique or only one if that's all that's left different.
-                            }
+                            if (secondSkillCandidate !== weeklyThemeSkillsRaw[0]) { weeklyThemeSkillsRaw.push(secondSkillCandidate); } 
+                            else if (availableSkillsForRotation.length > 2 && availableSkillsForRotation.length > weeklyThemeSkillsRaw.length) { weeklyThemeSkillsRaw.push(availableSkillsForRotation[ ( (i-1) * 2 + 2) % availableSkillsForRotation.length]); }
                         }
                     }
                     if (weeklyThemeSkillsRaw.length === 0 && allSelectedSkillsRaw.length > 0) weeklyThemeSkillsRaw.push(allSelectedSkillsRaw[0]); 
                     weeklyThemeSkillsRaw = [...new Set(weeklyThemeSkillsRaw)]; 
-
-
                     const weeklyThemeSkillsText = generateSkillList(weeklyThemeSkillsRaw);
                     html += `<h4 class="text-lg font-semibold text-sky-600 mb-1">Week ${i}: Focusing on ${weeklyThemeSkillsText}</h4>`;
                     let weeklyInterest = studentInterests.length > 0 ? studentInterests[(i-1) % studentInterests.length] : "engaging topics";
                     html += `<p class="italic text-sm text-slate-600 mb-3">This week, activities will center on understanding and practicing ${weeklyThemeSkillsText.toLowerCase()}, linking them to relevant classroom situations, SEL growth, and possibly themes related to ${weeklyInterest}.</p>`;
-
                     for (let j = 1; j <= lessonsPerWeekCount; j++) { 
                         let lessonFocusSkillRaw = "";
-                        if (weeklyThemeSkillsRaw.length > 0) {
-                            lessonFocusSkillRaw = weeklyThemeSkillsRaw[(j-1) % weeklyThemeSkillsRaw.length];
-                        } else if (allSelectedSkillsRaw.length > 0) {
-                            lessonFocusSkillRaw = allSelectedSkillsRaw[( (i-1) * lessonsPerWeekCount + (j-1) ) % allSelectedSkillsRaw.length];
-                        }
+                        if (weeklyThemeSkillsRaw.length > 0) { lessonFocusSkillRaw = weeklyThemeSkillsRaw[(j-1) % weeklyThemeSkillsRaw.length]; } 
+                        else if (allSelectedSkillsRaw.length > 0) { lessonFocusSkillRaw = allSelectedSkillsRaw[( (i-1) * lessonsPerWeekCount + (j-1) ) % allSelectedSkillsRaw.length]; }
                         if (!lessonFocusSkillRaw && allSelectedSkillsRaw.length > 0) lessonFocusSkillRaw = allSelectedSkillsRaw[0]; 
                         if (!lessonFocusSkillRaw) lessonFocusSkillRaw = "a key skill";
-                        
                         html += generateSessionContent(lessonFocusSkillRaw, gradeLevel, i, j, allSelectedSkillsRaw, studentInterests, preferredModalities);
                     }
                     html += `</div>`;
                 }
-
-                html += `<div class="mt-8 pt-6 border-t border-slate-300 page-break">`;
-                html += `<h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">General Integration Ideas (Throughout the Unit)</h3>`;
-                html += generateIntegrationIdeas(allSelectedSkillsRaw, gradeLevel, studentInterests);
-                html += `</div>`;
-
-                html += `<div class="mt-8 pt-6 border-t border-slate-300">`;
-                html += `<h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Progress Monitoring & Assessment Ideas</h3>`;
-                html += generateProgressMonitoringTips(allSelectedSkillsRaw, gradeLevel, studentInterests);
-                html += `</div>`;
+                html += `<div class="mt-8 pt-6 border-t border-slate-300 page-break"><h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">General Integration Ideas (Throughout the Unit)</h3>${generateIntegrationIdeas(allSelectedSkillsRaw, gradeLevel, studentInterests)}</div>`;
+                html += `<div class="mt-8 pt-6 border-t border-slate-300"><h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Progress Monitoring & Assessment Ideas</h3>${generateProgressMonitoringTips(allSelectedSkillsRaw, gradeLevel, studentInterests)}</div>`;
                 return html;
             }
 
             function generateSessionContent(rawSkill, gradeLevel, weekNum, lessonNum, allSelectedSkillsRaw, studentInterests, preferredModalities) { 
-                // ... (Full enhanced function from before)
                 const skillName = generateUniqueSkillName(rawSkill);
                 const selCompetencies = getAssociatedSECompetencies(rawSkill);
                 let sessionHtml = `<div class="ml-0 md:ml-4 mt-4 p-4 bg-white rounded shadow-md border border-slate-200">`;
@@ -713,14 +655,63 @@
                 sessionHtml += `<h6>Wrap-up & Reflection (Approx. 5 minutes):</h6><p class="text-sm">${getReflection(rawSkill, gradeLevel, selCompetencies, studentInterests, preferredModalities)}</p>`;
                 const closing = getClosing(rawSkill, gradeLevel, studentInterests);
                 if (closing) { sessionHtml += `<h6>Closing & Home Connection Idea (Optional, 1-2 minutes):</h6><p class="text-sm">${closing}</p>`;}
-                const teacherTip = getTeacherTip(rawSkill, gradeLevel, preferredModalities, allSelectedSkillsRaw, studentInterests);
+                const teacherTip = getTeacherTip(rawSkill, gradeLevel, preferredModalities, allSelectedSkillsRaw, studentInterests); // Pass studentInterests
                 if (teacherTip) { sessionHtml += `<p class="text-xs italic mt-2 p-2 bg-sky-50 rounded"><strong>Teacher Tip:</strong> ${teacherTip}</p>`;}
                 sessionHtml += `</div>`;
                 return sessionHtml;
             }
+            
+            function getMaterials(skill, gradeLevel, preferredModalities = []) {
+                let materials = ["Whiteboard or chart paper", "Markers or pens", "Paper", "Pencils or crayons"];
+                if (skill.includes("Time Management") || skill.includes("Planning")) materials.push("Timer (visual for K-2)", "Sample checklists or graphic organizers");
+                if (skill.includes("Emotional Regulation")) materials.push("Feeling faces chart/cards", "Breathing exercise visual (e.g., 'starfish breathing')", "Role-play scenario cards");
+                if (skill.includes("Working Memory")) materials.push("Picture cards", "Small objects for memory games", "List of multi-step directions");
+                if (gradeLevel === "4-6" && (skill.includes("Organization") || skill.includes("Self-Monitoring"))) materials.push("Student journals/notebooks", "Highlighters");
+                if (skill.includes("Cognitive Flexibility")) materials.push("Problem-solving scenario cards", "Building materials (e.g. blocks, craft supplies)");
+                if (preferredModalities.includes('artsCrafts')) { materials.push("Art supplies (colored paper, scissors, glue, play-doh, yarn)"); }
+                if (preferredModalities.includes('techIntegration')) { materials.push("Access to tablets or computers (if applicable and available)"); }
+                if (preferredModalities.includes('storytellingDrama')) { materials.push("Simple props or costumes (optional, e.g., hats, scarves)");}
+                return [...new Set(materials)];
+            }
 
+            function getWarmUp(skill, gradeLevel, weekNum, lessonNum, studentInterests = [], preferredModalities = []) {
+                const skillName = generateUniqueSkillName(skill);
+                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "a fun topic";
+                let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
+                const warmups = [
+                    `Quick Review: "Last session, we talked about [concept, e.g., 'listening with our whole body']. Who remembers one way that helps us, maybe when learning about ${capRandomInterest}?"`,
+                    `Mindful Moment: Lead a 1-minute 'Mindful Listening' exercise (e.g., "Listen for all the sounds you can hear inside/outside for 30 seconds") or 'Flower & Candle Breathing'. (SEL: Self-Awareness/Self-Management).`,
+                    `Brain Teaser: A simple ${capRandomInterest}-themed riddle or 'What am I?' game related to classroom objects. (EF: Attention/Working Memory).`,
+                    `"Feelings Check-in": Students use thumbs up/middle/down to show how they are feeling, or choose a 'feeling word' from a list. (SEL: Self-Awareness).`
+                ];
+                if (gradeLevel === "K-1") { warmups.push(`Sing a short, active song like "Head, Shoulders, Knees, and Toes" and then ask, "What part of our body helps us use ${skillName.toLowerCase()} when we play with ${capRandomInterest}?"`);} 
+                else if (gradeLevel === "2-3") { warmups.push(`"One-Word Whip Around": Students share one word that describes what ${skillName.toLowerCase()} means to them, or one word about ${capRandomInterest}.`);} 
+                else { warmups.push(`"Quick Write/Draw": Students jot down or sketch one challenge they sometimes face related to ${skillName.toLowerCase()} when working on ${capRandomInterest} or school projects. (No sharing necessary initially).`);}
+                if (preferredModalities.includes('movementKinesthetic')) { warmups.unshift(`Active Start: A quick "Body Brainstorm" - "Show me with your body what it looks like to be a good planner for a ${capRandomInterest} adventure!" or "Shake out the wiggles then find a 'ready to learn' pose." Helps with ${skillName} by preparing the brain and body.`);}
+                return getRandomElement(warmups);
+            }
+
+            function getMiniLesson(skill, gradeLevel, selCompetencies, studentInterests = []) {
+                const skillName = generateUniqueSkillName(skill);
+                const selText = selCompetencies.join(' and ').toLowerCase();
+                let interestExample = "";
+                let randomInterest = "";
+                if (studentInterests && studentInterests.length > 0) {
+                    randomInterest = getRandomElement(studentInterests);
+                    let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
+                    interestExample = ` For instance, if you love ${capRandomInterest}, using good ${skillName.toLowerCase()} can help you learn new facts, create amazing ${capRandomInterest} stories, or work with a friend on a ${capRandomInterest} game!`;
+                }
+                const definition = SKILL_DEFINITIONS[skill] || `our ability to effectively manage our actions and thoughts for this skill`;
+                let intro = `Today we're putting on our **${skillName}** thinking caps! ${skillName} is about ${definition.toLowerCase()} This is a super skill because it helps us do well in school, make friends, and even get better at things we enjoy like ${randomInterest || "our hobbies"}. When we strengthen our ${skillName.toLowerCase()}, we're also boosting our SEL skills like ${selText}.${interestExample}`;
+                let exampleOrStrategy = "";
+                let capRandomInterestForExample = randomInterest ? randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1) : "something cool";
+                if (gradeLevel === "K-1") { let K1_interest_ex = `remembering the rules for a ${capRandomInterestForExample} game or listening to a story about ${capRandomInterestForExample}.`; exampleOrStrategy = `Think about ${K1_interest_ex} That's using our ${skillName.toLowerCase()}! A simple way to practice is to use "listening ears" and "quiet hands."`; } 
+                else if (gradeLevel === "2-3") { let G23_interest_ex = `planning the steps to build a ${capRandomInterestForExample} model or figuring out how to share ideas for a ${capRandomInterestForExample} group poster.`; exampleOrStrategy = `Imagine ${G23_interest_ex} You need ${skillName.toLowerCase()} to think about the steps or talk things through. A strategy is to "Stop, Think, Plan" or "Take Turns Talking."`;} 
+                else { let G46_interest_ex = `organizing a research project about ${capRandomInterestForExample}, managing your time to finish a ${capRandomInterestForExample}-themed assignment, or solving a tricky problem in a ${capRandomInterestForExample} computer game.`; exampleOrStrategy = `Consider ${G46_interest_ex}. Strong ${skillName.toLowerCase()} skills help you break down big tasks, use tools like checklists, and stay focused. We can also use strategies like "self-talk" to guide our thinking. How does using ${skillName.toLowerCase()} help you be a responsible and successful learner (SEL)?`;}
+                return intro + ` ${exampleOrStrategy} Let's brainstorm: When was a time this week you used (or could have used) ${skillName.toLowerCase()}? How did it feel?`;
+            }
+            
             function getCoreActivity(skill, gradeLevel, selCompetencies, allSelectedSkillsRaw, studentInterests = [], preferredModalities = []) {
-                // ... (Full enhanced function from before)
                 const skillName = generateUniqueSkillName(skill);
                 const selText = selCompetencies[0].toLowerCase();
                 let activity = { title: `Strengthening Our ${skillName}`, description: `Let's dive into an activity to actively build our ${skillName.toLowerCase()} and practice ${selText} (SEL).`, steps: ["Follow teacher's instructions.", "Participate respectfully.", "Reflect on your experience."], differentiation: "Adjust complexity based on student responses." };
@@ -809,20 +800,20 @@
                     activity.differentiation = `K-1: Use concrete materials, direct modeling, very short activities, lots of praise for effort. 2-3: Partner work, slightly longer tasks, simple written/drawn responses. 4-6: Small group problem-solving, apply to more complex academic or social scenarios, encourage students to generate their own examples.`;
                 }
                 
+                // FIX: Ensure strings are properly quoted and concatenated
                 if (preferredModalities.includes('artsCrafts') && chosenActivityType !== 'Hands-On Task/Project Intro') {
-                    activity.differentiation += ` Art Connection: Students could draw a comic strip showing someone using the ${skillName.toLowerCase()} strategy effectively in a ${interestFlavor || "school situation"}, or create a small craft representing a key idea from the lesson.`;
+                    activity.differentiation += ` Art Connection: Students could draw a comic strip showing someone using the ${skillName.toLowerCase()} strategy effectively in a ${interestFlavor ? interestFlavor + " " : ""}school situation, or create a small craft representing a key idea from the lesson.`;
                 }
                 if (preferredModalities.includes('storytellingDrama') && chosenActivityType !== 'Role-Play') {
-                    activity.differentiation += ` Story/Drama Link: As a group, create a short story or a tableau (frozen scene) about a character (perhaps a ${interestFlavor || "curious explorer"}) who learns to use ${skillName.toLowerCase()} to solve a problem.`;
+                    activity.differentiation += ` Story/Drama Link: As a group, create a short story or a tableau (frozen scene) about a character (perhaps a ${interestFlavor ? interestFlavor + " " : ""}curious explorer) who learns to use ${skillName.toLowerCase()} to solve a problem.`;
                 }
                 if (preferredModalities.includes('techIntegration')) {
-                    activity.differentiation += ` Tech Idea: If appropriate and available, use a simple polling tool for quick reflections, or find a short educational video/interactive game that reinforces ${skillName.toLowerCase()} (related to ${interestFlavor || "a concept"} if possible).`;
+                    activity.differentiation += ` Tech Idea: If appropriate and available, use a simple polling tool for quick reflections, or find a short educational video/interactive game that reinforces ${skillName.toLowerCase()}${interestFlavor ? " (related to " + interestFlavor + " if possible)" : ""}.`;
                 }
                 return activity;
             }
 
             function getReflection(skill, gradeLevel, selCompetencies, studentInterests = [], preferredModalities = []) {
-                // ... (Full enhanced function from before)
                 const skillName = generateUniqueSkillName(skill);
                 const selText = selCompetencies[0].toLowerCase(); 
                 let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "something you enjoy";
@@ -840,7 +831,6 @@
             }
 
             function getClosing(skill, gradeLevel, studentInterests = []) {
-                // ... (Full enhanced function from before)
                 const skillName = generateUniqueSkillName(skill);
                 let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "your favorite things";
                 if (Math.random() < 0.9) { 
@@ -853,10 +843,10 @@
             }
             
             function getTeacherTip(skill, gradeLevel, preferredModalities = [], allSelectedSkillsRaw = [], studentInterests = []) { 
-                // ... (Full enhanced function from before)
                 const skillName = generateUniqueSkillName(skill);
                 let tips = [];
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "various topics";
+                let randomInterest = studentInterests && studentInterests.length > 0 ? getRandomElement(studentInterests) : "various topics"; // Ensure studentInterests is defined
+
                 tips.push(`Consistently model 'think-alouds' when you demonstrate ${skillName.toLowerCase()}. Example for Planning: 'Okay, for our ${randomInterest} project, my first step is to gather materials. I need to think about what those are... Hmm, paper, crayons, and maybe some glitter!' This makes the internal process visible.`);
                 tips.push(`Provide specific, positive reinforcement immediately when students attempt or successfully use ${skillName.toLowerCase()} strategies. Describe the behavior you saw: "I noticed you took three deep breaths when the ${randomInterest} tower fell – that was excellent ${generateUniqueSkillName('Emotional Regulation (EF)')}!" or "You made a clear plan for your ${randomInterest} story, great ${generateUniqueSkillName('Planning and Organization')}!" Focus on effort and strategy use, not just outcome.`);
                 tips.push(`Break down multi-step directions, especially for tasks requiring strong ${skill.includes("Working Memory") ? "Working Memory" : skillName.toLowerCase()}. Use visuals (like a mini-schedule for a ${randomInterest} activity sequence) and minimize classroom distractions during focused work times. Check for understanding frequently using varied methods (e.g., "Tell me the first step," "Show me what to do next").`);
@@ -868,14 +858,21 @@
                 if (skill.includes("Attention and Focus")) { tips.push(`For ${skillName.toLowerCase()}: Minimize auditory and visual distractions during focused work. Provide clear, concise instructions, perhaps written and verbal. Consider preferential seating away from high-traffic areas. Allow for short, structured movement breaks (e.g., 2 minutes of stretching before a ${randomInterest} read-aloud) or sensory tools if these are helpful and not distracting to others. Schedule highly engaging ${randomInterest}-themed activities after more demanding tasks.`);}
                 if (skill.includes("Cognitive Flexibility")) { tips.push(`When routines change or unexpected problems arise (e.g., a planned ${randomInterest} activity isn't possible), explicitly label it as a chance to practice "flexible thinking." Brainstorm alternative solutions as a class or in small groups. Praise students for adapting without major distress. This supports the "Flexible Adapter" stage.`);}
                 if (skill.includes("Social Skills") || skill.includes("Communication Skills")) { tips.push(`Use structured social skills instruction: model, role-play, provide feedback, and reinforce positive interactions during natural opportunities (e.g., group work on a ${randomInterest} project, recess games). Use visual supports for social rules or conversation steps, especially for "Emerging Peers" or "Foundational Communicators".`);}
-                if (preferredModalities.includes('discussionOriented')) { tips.push(`Since discussion is a preferred modality, ensure ample time for 'Think-Pair-Share' or Socratic questioning when exploring ${skillName.toLowerCase()} strategies related to ${randomInterest || "topics"}.`);}
-                if (preferredModalities.includes('artsCrafts') && !skill.includes("Planning")) { tips.push(`Integrate arts/crafts: Students can create visual reminders for ${skillName.toLowerCase()} strategies (e.g., a "Stoplight" for impulse control with a ${randomInterest} character).`);}
+                
+                // FIX: Corrected string concatenation for artsCrafts tip
+                if (preferredModalities.includes('artsCrafts') && !skill.includes("Planning")) { 
+                    tips.push(`Integrate arts/crafts: Students can create visual reminders for ${skillName.toLowerCase()} strategies (e.g., a "Stoplight" for impulse control with a ${randomInterest ? randomInterest + " " : ""}character).`);
+                }
+                if (preferredModalities.includes('discussionOriented')) { 
+                    tips.push(`Since discussion is a preferred modality, ensure ample time for 'Think-Pair-Share' or Socratic questioning when exploring ${skillName.toLowerCase()} strategies related to ${randomInterest || "topics"}.`);
+                }
+
+
                 if (tips.length > 0) { let finalTips = []; finalTips.push(getRandomElement(tips)); if (tips.length > 1 && Math.random() > 0.3) { let secondTip = getRandomElement(tips.filter(t => t !== finalTips[0])); if (secondTip) finalTips.push(secondTip);} return finalTips.join(" ");}
                 return "Remember to model and reinforce these skills consistently throughout the day in various contexts!";
             }
 
             function generateIntegrationIdeas(skillsRaw, gradeLevel, studentInterests = []) { 
-                // ... (Full enhanced function from before)
                 let ideas = `<ul class="list-disc list-inside pl-4 text-sm space-y-1">`;
                 const uniqueSkillsText = generateSkillList(skillsRaw);
                 let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "classroom activities";
@@ -895,7 +892,6 @@
             }
 
             function generateProgressMonitoringTips(skillsRaw, gradeLevel, studentInterests = []) { 
-                // ... (Full enhanced function from before)
                 let tips = `<ul class="list-disc list-inside pl-4 text-sm space-y-1">`;
                 const focusSkillsText = generateSkillList(skillsRaw);
                 let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "learning activities";
@@ -913,6 +909,7 @@
                 tips += `</ul>`;
                 return tips;
             }
+
 
             console.log("DEBUG: Enhanced Interactive Unit Plan Generator script fully initialized and event listeners attached.");
         }); // End DOMContentLoaded
