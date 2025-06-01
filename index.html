@@ -229,10 +229,8 @@
     </footer>
 
 <script>
-    // --- SKILL DEFINITIONS (Based on your provided documents or general knowledge) ---
-    // Ensure these definitions are from your own understanding or publicly available, non-copyrighted summaries.
-    // The pattern was removed from definition strings; if you have specific source documents for these definitions,
-    // you would handle that according to your project's needs, but not directly in these strings if it causes issues.
+    // --- SKILL DEFINITIONS ---
+    // These are general definitions. Ensure they align with your understanding and resources.
     const SKILL_DEFINITIONS = {
         "Working Memory": "The ability to hold and manipulate information in mind for short periods. For example, remembering multi-step instructions or details of a story.",
         "Inhibition (Impulse Control)": "The capacity to pause and think before acting or speaking. Helps resist distractions or urges.",
@@ -275,7 +273,7 @@
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM Content Loaded and initial script running.");
+        console.log("DOM Content Loaded and initial script running."); // For debugging
 
         const generateButton = document.getElementById('generateButton');
         const resultsContainer = document.getElementById('resultsContainer');
@@ -283,7 +281,7 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         const errorMessageDiv = document.getElementById('error-message');
         const printButton = document.getElementById('printButton');
-        const skillTooltip = document.getElementById('skillTooltip');
+        const skillTooltip = document.getElementById('skillTooltip'); // Assuming this is your tooltip element
 
         const numWeeksSelect = document.getElementById('numWeeks');
         const lessonsPerWeekSelect = document.getElementById('lessonsPerWeek');
@@ -293,10 +291,10 @@
         const efSkillsContainer = document.getElementById('efSkillsContainer');
         const behSkillsContainer = document.getElementById('behSkillsContainer');
 
-        console.log("Populating EF/Beh skills checkboxes and setting up primary skill dropdowns.");
+        console.log("Populating EF/Beh skills checkboxes."); // For debugging
         function populateSkillCheckboxes(container, skills, groupName, colorClass) {
             if (!container) {
-                console.error(`Container not found for: ${groupName}`);
+                console.error(`Container not found for: ${groupName}. Skill checkboxes will not be populated.`);
                 return;
             }
             skills.forEach(skill => {
@@ -333,18 +331,19 @@
         const efSkillsCheckboxes = Array.from(document.querySelectorAll('input[name="efSkills"]'));
         const behSkillsCheckboxes = Array.from(document.querySelectorAll('input[name="behSkills"]'));
 
+        console.log("Setting up primary skill dropdowns logic."); // For debugging
         function updatePrimarySkillDropdowns() {
-            console.log("Updating primary skill dropdowns...");
+            // console.log("Updating primary skill dropdowns..."); // Can be noisy, enable if needed
             const selectedSkills = [...efSkillsCheckboxes, ...behSkillsCheckboxes]
                                      .filter(cb => cb.checked)
                                      .map(cb => ({ value: cb.value, text: generateUniqueSkillName(cb.value) }));
 
-            const currentVal1 = primarySkill1Select.value;
-            const currentVal2 = primarySkill2Select.value;
+            const currentVal1 = primarySkill1Select ? primarySkill1Select.value : "";
+            const currentVal2 = primarySkill2Select ? primarySkill2Select.value : "";
 
             [primarySkill1Select, primarySkill2Select].forEach(select => {
                 if (!select) {
-                    console.error("Primary skill select element not found.");
+                    console.error("A Primary skill select element was not found during update. Check HTML IDs 'primarySkill1' and 'primarySkill2'.");
                     return;
                 }
                 select.innerHTML = '<option value="">-- None --</option>'; 
@@ -355,15 +354,12 @@
                     select.appendChild(option);
                 });
             });
-            if (selectedSkills.some(s => s.value === currentVal1) && primarySkill1Select) primarySkill1Select.value = currentVal1;
-            if (selectedSkills.some(s => s.value === currentVal2) && primarySkill2Select) primarySkill2Select.value = currentVal2;
-            console.log("Primary skill dropdowns updated.");
+            if (primarySkill1Select && selectedSkills.some(s => s.value === currentVal1)) primarySkill1Select.value = currentVal1;
+            if (primarySkill2Select && selectedSkills.some(s => s.value === currentVal2)) primarySkill2Select.value = currentVal2;
+            // console.log("Primary skill dropdowns updated."); // Can be noisy
         }
         
-        // Initial call to populate dropdowns if any skills were pre-checked (none are in this setup)
-        // updatePrimarySkillDropdowns(); // Not strictly necessary as it populates on checkbox change
-
-        console.log("Setting up tooltip listeners.");
+        console.log("Setting up tooltip listeners."); // For debugging
         document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
             trigger.addEventListener('mouseenter', showTooltip);
             trigger.addEventListener('mouseleave', hideTooltip);
@@ -379,15 +375,17 @@
             });
         });
 
+        // CORRECTED/SIMPLIFIED showTooltip function
         function showTooltip(event) {
             const trigger = event.currentTarget; 
             const skillKey = trigger.dataset.skill;
             const definition = SKILL_DEFINITIONS[skillKey] || "No definition available.";
-            // Removed the .replace for [cite] as SKILL_DEFINITIONS was cleaned
-            skillTooltip.innerHTML = definition; 
+            
+            skillTooltip.innerHTML = definition; // Directly set innerHTML
             skillTooltip.dataset.currentTrigger = skillKey; 
 
             const rect = trigger.getBoundingClientRect();
+            // Position tooltip relative to the viewport, then add scroll offsets
             skillTooltip.style.left = `${rect.left + window.scrollX}px`;
             skillTooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
             
@@ -395,17 +393,32 @@
         }
 
         function hideTooltip() {
-            skillTooltip.classList.remove('visible');
-            delete skillTooltip.dataset.currentTrigger;
+            if (skillTooltip) { // Check if skillTooltip exists
+               skillTooltip.classList.remove('visible');
+               delete skillTooltip.dataset.currentTrigger;
+            }
         }
+
         document.addEventListener('click', (e) => { 
             if (skillTooltip && !skillTooltip.contains(e.target) && e.target && !e.target.classList.contains('tooltip-trigger')) {
                 hideTooltip();
             }
         });
 
-        if (!generateButton) { console.error("Critical Error: Generate button not found!"); return; }
-        if (!printButton) { console.error("Critical Error: Print button not found!"); return; }
+        // Null checks for critical elements
+        if (!generateButton) { console.error("Critical Error: Generate button (generateButton) not found!"); return; }
+        if (!printButton) { console.error("Critical Error: Print button (printButton) not found!"); return; }
+        if (!resultsContainer) { console.error("Critical Error: Results container (resultsContainer) not found!"); return; }
+        if (!resultsDiv) { console.error("Critical Error: Results div (results) not found!"); return; }
+        if (!loadingIndicator) { console.error("Critical Error: Loading indicator (loadingIndicator) not found!"); return; }
+        if (!errorMessageDiv) { console.warn("Warning: Error message div (error-message) not found."); } // Less critical
+        if (!skillTooltip) { console.error("Critical Error: Skill tooltip div (skillTooltip) not found!"); return; }
+        if (!numWeeksSelect || !lessonsPerWeekSelect || !primarySkill1Select || !primarySkill2Select) {
+             console.error("Critical Error: One or more form select elements (numWeeks, lessonsPerWeek, primarySkill1/2) not found!"); return;
+        }
+        if (!efSkillsContainer || !behSkillsContainer) {
+             console.error("Critical Error: Skill checkbox containers (efSkillsContainer or behSkillsContainer) not found!"); return;
+        }
         
         printButton.addEventListener('click', () => { window.print(); });
 
@@ -436,7 +449,7 @@
                 return;
             }
             
-            if (errorMessageDiv) errorMessageDiv.classList.add('hidden');
+            if (errorMessageDiv) errorMessageDiv.classList.add('hidden'); // Hide error if shown previously
             if (resultsContainer) resultsContainer.classList.add('hidden');
             if (loadingIndicator) loadingIndicator.classList.remove('hidden');
             if (resultsDiv) resultsDiv.innerHTML = ''; 
@@ -452,9 +465,9 @@
                     }
                 } catch (error) {
                     console.error("Error during unit plan generation:", error);
-                    if (resultsDiv) resultsDiv.innerHTML = "<p class='text-red-500'>An error occurred: " + error.message + ". Check console.</p>";
+                    if (resultsDiv) resultsDiv.innerHTML = "<p class='text-red-500'>An error occurred: " + error.message + ". Check console for details.</p>";
                     if (loadingIndicator) loadingIndicator.classList.add('hidden');
-                    if (resultsContainer) resultsContainer.classList.remove('hidden');
+                    if (resultsContainer) resultsContainer.classList.remove('hidden'); // Show results container to display error
                 }
             }, 500); 
         });
@@ -465,7 +478,7 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
         
-        const CASEL_COMPETENCIES_MAP = {
+        const CASEL_COMPETENCIES_MAP = { // Keep this map as defined before
             "Working Memory": ["Self-Management", "Responsible Decision-Making"],
             "Inhibition (Impulse Control)": ["Self-Management", "Relationship Skills"],
             "Cognitive Flexibility": ["Social Awareness", "Responsible Decision-Making"],
@@ -510,7 +523,7 @@
             return skills.slice(0, -1).join(', ') + ', and ' + skills.slice(-1);
         }
 
-        // --- Main Content Generation ---
+        // --- Main Content Generation (Updated Signature) ---
         function generateUnitPlanContent(gradeLevel, efSkills, behSkills, numWeeks, lessonsPerWeekCount, primarySkills, studentInterests, preferredModalities) {
             const allSelectedSkillsRaw = [...efSkills, ...behSkills];
             
@@ -533,7 +546,7 @@
                 html += `<p><strong>Student Interests Considered:</strong> ${studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ')}</p>`;
             }
             if (preferredModalities.length > 0) {
-                html += `<p><strong>Preferred Teaching Modalities Considered:</strong> ${preferredModalities.map(m => m.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())).join(', ')}</p>`;
+                html += `<p><strong>Preferred Teaching Modalities Considered:</strong> ${preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()).join(', ')}</p>`;
             }
 
             const allSelCompetenciesForUnit = [...new Set(allSelectedSkillsRaw.flatMap(skill => getAssociatedSECompetencies(skill)))];
@@ -542,7 +555,7 @@
 
             html += `<h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Unit Overview & Outcomes</h3>`;
             const focusSkillsText = generateSkillList(allSelectedSkillsRaw);
-            const overviewInterestsText = studentInterests.length > 0 ? studentInterests.join(', ') : 'various engaging themes';
+            const overviewInterestsText = studentInterests.length > 0 ? studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ') : 'various engaging themes';
             html += `<p>This ${numWeeks}-week unit focuses on developing students' ${focusSkillsText}. Executive functioning and behavioral skills are crucial for academic success, social-emotional well-being, and effective self-regulation. This unit aims to enhance these abilities through targeted activities that are engaging, developmentally appropriate for students in ${gradeLevel}, and incorporates student interests like ${overviewInterestsText}. ${primarySkills.length > 0 ? `Special emphasis will be placed on ${generateSkillList(primarySkills)}.` : ''}</p>`;
             html += `<p><strong>Key Outcomes:</strong> By the end of this unit, students will be better able to:</p>
                        <ul class="list-disc list-inside pl-4 text-sm">
@@ -552,18 +565,20 @@
                            <li>Reflect on their own skill development and identify areas for continued practice.</li>
                        </ul>`;
 
-            for (let i = 1; i <= numWeeks; i++) { 
+            for (let i = 1; i <= numWeeks; i++) { // i is weekNum
                 html += `<div class="mt-6 pt-4 border-t border-slate-300 page-break">`; 
                 let weeklyThemeSkillsRaw = [];
+                // Prioritize primary skills for weekly themes
                 if (primarySkills.length > 0) {
                     weeklyThemeSkillsRaw.push(primarySkills[i % primarySkills.length]); 
-                    if (primarySkills.length === 1 && allSelectedSkillsRaw.length > 1) { 
+                    if (primarySkills.length === 1 && allSelectedSkillsRaw.length > 1) { // If one primary, add another selected skill
                         let otherSkill = getRandomElement(allSelectedSkillsRaw.filter(s => s !== primarySkills[0]));
                         if (otherSkill) weeklyThemeSkillsRaw.push(otherSkill);
                     } else if (primarySkills.length > 1 && (i % primarySkills.length) + 1 < primarySkills.length) {
-                         weeklyThemeSkillsRaw.push(primarySkills[(i % primarySkills.length) + 1]); 
+                         weeklyThemeSkillsRaw.push(primarySkills[(i % primarySkills.length) + 1]); // Add second primary if available
                     }
                 }
+                // Fill with other selected skills if needed or no primary skills
                 while(weeklyThemeSkillsRaw.length < 2 && allSelectedSkillsRaw.length > weeklyThemeSkillsRaw.length) {
                     let nextSkill = getRandomElement(allSelectedSkillsRaw.filter(s => !weeklyThemeSkillsRaw.includes(s)));
                     if (nextSkill) weeklyThemeSkillsRaw.push(nextSkill); else break;
@@ -571,13 +586,15 @@
                  if (weeklyThemeSkillsRaw.length === 0 && allSelectedSkillsRaw.length > 0) weeklyThemeSkillsRaw.push(getRandomElement(allSelectedSkillsRaw));
                  if (weeklyThemeSkillsRaw.length === 0) weeklyThemeSkillsRaw.push("Key Foundational Skills");
 
+
                 const weeklyThemeSkillsText = generateSkillList(weeklyThemeSkillsRaw);
                 html += `<h4 class="text-lg font-semibold text-sky-600 mb-1">Week ${i}: Focusing on ${weeklyThemeSkillsText}</h4>`;
                 let weeklyInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "engaging topics";
                 html += `<p class="italic text-sm text-slate-600 mb-3">This week, activities will center on understanding and practicing ${weeklyThemeSkillsText.toLowerCase()}, linking them to relevant classroom situations, SEL growth, and possibly themes related to ${weeklyInterest}.</p>`;
 
-                for (let j = 1; j <= lessonsPerWeekCount; j++) { 
+                for (let j = 1; j <= lessonsPerWeekCount; j++) { // j is lessonNum for the week
                     let lessonFocusSkillRaw = "";
+                    // Prioritize primary skills for lessons within the week, then weekly theme skills
                     if (primarySkills.length > 0 && weeklyThemeSkillsRaw.some(s => primarySkills.includes(s))) {
                         lessonFocusSkillRaw = weeklyThemeSkillsRaw.find(s => primarySkills.includes(s)) || getRandomElement(primarySkills);
                     }
@@ -587,7 +604,7 @@
                     if (!lessonFocusSkillRaw && allSelectedSkillsRaw.length > 0) {
                         lessonFocusSkillRaw = getRandomElement(allSelectedSkillsRaw);
                     }
-                    if (!lessonFocusSkillRaw) lessonFocusSkillRaw = "a key skill";
+                    if (!lessonFocusSkillRaw) lessonFocusSkillRaw = "a key skill"; // Fallback
                     
                     html += generateSessionContent(lessonFocusSkillRaw, gradeLevel, i, j, allSelectedSkillsRaw, studentInterests, preferredModalities);
                 }
@@ -613,8 +630,8 @@
             let sessionHtml = `<div class="ml-0 md:ml-4 mt-4 p-4 bg-white rounded shadow-md border border-slate-200">`;
             sessionHtml += `<h5 class="text-md font-semibold text-slate-800 mb-2">Week ${weekNum}, Session ${lessonNum} - Primary Focus: ${skillName}</h5>`;
             
-            const interestsForObjective = studentInterests.length > 0 ? studentInterests.join(' or ') : 'everyday tasks';
-            const modalitiesForObjective = preferredModalities.length > 0 ? preferredModalities.map(m => m.replace(/([A-Z])/g, ' $1').toLowerCase()).join(' or ') : 'varied';
+            const interestsForObjective = studentInterests.length > 0 ? studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(' or ') : 'everyday tasks';
+            const modalitiesForObjective = preferredModalities.length > 0 ? preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').toLowerCase().trim()).join(' or ') : 'varied';
 
 
             sessionHtml += `<h6>Learning Objectives:</h6><ul class="list-disc list-inside pl-4 text-sm">`;
@@ -677,23 +694,25 @@
         function getWarmUp(skill, gradeLevel, weekNum, lessonNum, studentInterests = [], preferredModalities = []) {
             const skillName = generateUniqueSkillName(skill);
             let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "a fun topic";
+             let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
+
             
             const warmups = [
-                `Review: "Last session, we talked about [previous related concept or skill]. Who can share one thing they remember, maybe how it connects to ${randomInterest}?"`,
+                `Review: "Last session, we talked about [previous related concept or skill]. Who can share one thing they remember, maybe how it connects to ${capRandomInterest}?"`,
                 `Mindful Moment: Lead a 1-minute 'Rainbow Breathing' or 'Listen to the Bell' activity to center students. (SEL: Self-Management/Self-Awareness).`,
-                `Quick Brain Teaser: A simple riddle about ${randomInterest} or a 'What's different?' picture game. (EF: Attention/Working Memory).`,
+                `Quick Brain Teaser: A simple riddle about ${capRandomInterest} or a 'What's different?' picture game. (EF: Attention/Working Memory).`,
                 `"Rate Your ${skillName}": Students silently give a thumbs up/middle/down on how they feel their ${skillName.toLowerCase()} skills are today. (SEL: Self-Awareness).`
             ];
              if (gradeLevel === "K-1") {
-                warmups.push(`Sing a short, active song related to listening or about ${randomInterest} (e.g., "Head, Shoulders, Knees, and Toes" done quickly, then slowly for inhibition).`);
+                warmups.push(`Sing a short, active song related to listening or about ${capRandomInterest} (e.g., "Head, Shoulders, Knees, and Toes" done quickly, then slowly for inhibition).`);
             } else if (gradeLevel === "2-3") {
-                 warmups.push(`"Two Truths and a Strategy for ${randomInterest}": Teacher shares two true statements about using ${skillName} for ${randomInterest} and one 'strategy' that is not helpful. Students identify the non-helpful one.`);
+                 warmups.push(`"Two Truths and a Strategy for ${capRandomInterest}": Teacher shares two true statements about using ${skillName} for ${capRandomInterest} and one 'strategy' that is not helpful. Students identify the non-helpful one.`);
             } else { // 4-6
-                warmups.push(`"Quick Write/Draw": Students jot down or sketch one word or image that comes to mind when they hear "${skillName}" in relation to ${randomInterest}. Share with a partner.`);
+                warmups.push(`"Quick Write/Draw": Students jot down or sketch one word or image that comes to mind when they hear "${skillName}" in relation to ${capRandomInterest}. Share with a partner.`);
             }
 
             if (preferredModalities.includes('movementKinesthetic')) { 
-                warmups.unshift(`Active Start: Begin with a short, 1-minute movement break (e.g., "Shake Your Sillies Out" or "Follow the Leader" with actions related to ${randomInterest}) to get energy flowing before focusing on ${skillName}.`);
+                warmups.unshift(`Active Start: Begin with a short, 1-minute movement break (e.g., "Shake Your Sillies Out" or "Follow the Leader" with actions related to ${capRandomInterest}) to get energy flowing before focusing on ${skillName}.`);
             }
             return getRandomElement(warmups);
         }
@@ -705,20 +724,24 @@
             let randomInterest = "";
             if (studentInterests && studentInterests.length > 0) {
                 randomInterest = getRandomElement(studentInterests);
-                interestExample = ` For example, if you are really interested in ${randomInterest}, using good ${skillName.toLowerCase()} can help you learn more about it or build something cool related to ${randomInterest}!`;
+                let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
+                interestExample = ` For example, if you are really interested in ${capRandomInterest}, using good ${skillName.toLowerCase()} can help you learn more about it or build something cool related to ${capRandomInterest}!`;
             }
+            const definitionStart = SKILL_DEFINITIONS[skill] ? SKILL_DEFINITIONS[skill].split('.')[0].toLowerCase() : `developing our ability to effectively manage this skill`;
 
-            let intro = `Today our EF skill focus is **${skillName}**. This means ${SKILL_DEFINITIONS[skill] ? SKILL_DEFINITIONS[skill].split('.')[0].toLowerCase() : `developing our ability to effectively manage this skill`}. This is super important because it helps us [real-life benefit, e.g., 'succeed in our learning,' 'get along better with friends,' 'reach our goals']. When we practice ${skillName.toLowerCase()}, we are also building our SEL skills like ${selText}.${interestExample}`;
+            let intro = `Today our EF skill focus is **${skillName}**. This means ${definitionStart}. This is super important because it helps us [real-life benefit, e.g., 'succeed in our learning,' 'get along better with friends,' 'reach our goals']. When we practice ${skillName.toLowerCase()}, we are also building our SEL skills like ${selText}.${interestExample}`;
             
             let exampleOrStrategy = "";
+            let capRandomInterestForExample = randomInterest ? randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1) : "";
+
             if (gradeLevel === "K-1") {
-                 let K1_interest_ex = randomInterest ? `Maybe you want to remember how to draw your favorite ${randomInterest} - ${skillName.toLowerCase()} helps!` : `when we need to remember two things our teacher said, that's using our ${skillName.toLowerCase()}!`;
+                 let K1_interest_ex = capRandomInterestForExample ? `Maybe you want to remember how to draw your favorite ${capRandomInterestForExample} - ${skillName.toLowerCase()} helps!` : `when we need to remember two things our teacher said, that's using our ${skillName.toLowerCase()}!`;
                 exampleOrStrategy = `For example, ${K1_interest_ex} We can use a special signal like tapping our head to help us remember.`;
             } else if (gradeLevel === "2-3") {
-                let G23_interest_ex = randomInterest ? `planning a big project about ${randomInterest}` : `planning a birthday party`;
+                let G23_interest_ex = capRandomInterestForExample ? `planning a big project about ${capRandomInterestForExample}` : `planning a birthday party`;
                 exampleOrStrategy = `Think about ${G23_interest_ex} – you need to decide all the parts. That's ${skillName.toLowerCase()} in action! A strategy we can use is to make a list.`;
             } else { // 4-6
-                 let G46_interest_ex = randomInterest ? `completing a detailed report on ${randomInterest}` : `a long-term project`;
+                 let G46_interest_ex = capRandomInterestForExample ? `completing a detailed report on ${capRandomInterestForExample}` : `a long-term project`;
                 exampleOrStrategy = `Consider ${G46_interest_ex}. To do well, you need to use ${skillName.toLowerCase()} to break it down, manage your time, and check your progress. We can use tools like a digital calendar or a detailed checklist. How does this connect to being responsible (SEL)?`;
             }
             return intro + ` ${exampleOrStrategy} Let's discuss: Can you think of a time you used ${skillName.toLowerCase()} this week, or when it was tricky?`;
@@ -733,35 +756,29 @@
             if (gradeLevel === "4-6") baseActivityTypes.push("Case Study/Problem-Solving", "Goal Setting & Planning Session");
             
             let chosenActivityType = "";
-            let modalityInfluenceApplied = false; // Flag to see if a preferred modality directly picked an activity type
+            let modalityInfluenceApplied = false; 
 
             if (preferredModalities && preferredModalities.length > 0) {
-                // Create a shuffled list of preferred modalities to avoid always picking the first one
                 const shuffledModalities = [...preferredModalities].sort(() => 0.5 - Math.random());
-
                 for (const modality of shuffledModalities) {
                     if (modality === "gameBased" && baseActivityTypes.includes("Game")) { chosenActivityType = "Game"; modalityInfluenceApplied = true; break; }
                     if (modality === "storytellingDrama" && baseActivityTypes.includes("Role-Play")) { chosenActivityType = "Role-Play"; modalityInfluenceApplied = true; break;}
                     if (modality === "movementKinesthetic" && (skill.includes("Inhibition") || skill.includes("Attention") || skill.includes("Impulse Control")) && baseActivityTypes.includes("Game")) {
-                        chosenActivityType = "Game"; 
-                        modalityInfluenceApplied = true; break;
+                        chosenActivityType = "Game"; modalityInfluenceApplied = true; break;
                     }
                     if (modality === "artsCrafts" && baseActivityTypes.includes("Hands-On Task/Project Intro")) {
-                        chosenActivityType = "Hands-On Task/Project Intro"; 
-                        modalityInfluenceApplied = true; break;
+                        chosenActivityType = "Hands-On Task/Project Intro"; modalityInfluenceApplied = true; break;
                     }
                      if (modality === "techIntegration" && (skill.includes("Working Memory") || skill.includes("Planning") || skill.includes("Self-Monitoring (EF)")) && baseActivityTypes.includes("Game")) { 
-                        chosenActivityType = "Game"; 
-                        modalityInfluenceApplied = true; break;
+                        chosenActivityType = "Game"; modalityInfluenceApplied = true; break;
                     }
-                    if (modality === "discussionOriented" && baseActivityTypes.includes("Case Study/Problem-Solving")) { // For older grades
-                         chosenActivityType = "Case Study/Problem-Solving";
-                         modalityInfluenceApplied = true; break;
+                    if (modality === "discussionOriented" && gradeLevel === "4-6" && baseActivityTypes.includes("Case Study/Problem-Solving")) {
+                         chosenActivityType = "Case Study/Problem-Solving"; modalityInfluenceApplied = true; break;
                     }
                 }
             }
 
-            if (!chosenActivityType) { // Fallback if no preferred modality matched or none were selected
+            if (!chosenActivityType) {
                 if (skill.includes("Inhibition") || skill.includes("Impulse Control") || skill.includes("Attention")) chosenActivityType = "Game";
                 else if (skill.includes("Social Skill") || skill.includes("Communication") || skill.includes("Conflict Resolution") || skill.includes("Emotional Regulation")) chosenActivityType = "Role-Play";
                 else if (skill.includes("Planning") || skill.includes("Organization") || skill.includes("Time Management") || skill.includes("Initiation") || skill.includes("Self-Monitoring")) chosenActivityType = "Strategy Instruction";
@@ -774,7 +791,6 @@
                 interestPrefix = interestFlavor.charAt(0).toUpperCase() + interestFlavor.slice(1) + "-Themed ";
             }
 
-
             switch (chosenActivityType) {
                 case "Game":
                     activity.title = `${interestPrefix}${skillName} Power Game!`;
@@ -786,10 +802,10 @@
                         activity.differentiation = "K-1: Use fewer items/steps. 4-6: Increase items/steps, add distractors.";
                     } else if (skill.includes("Inhibition") || skill.includes("Impulse Control")) {
                         activity.description = `Let's practice our ${skillName.toLowerCase()} with this 'stop and think' game. Imagine you are a ${interestFlavor || "statue"}! (SEL: ${selText}).`;
-                        if (preferredModalities.includes('movementKinesthetic')) {
+                        if (preferredModalities.includes('movementKinesthetic') || modalityInfluenceApplied && chosenActivityType === "Game" && (skill.includes("Inhibition") || skill.includes("Impulse Control"))) {
                             activity.steps = gradeLevel === "K-1" ? [`'${interestPrefix || "Animal"} Freeze Dance': Dance like various ${interestFlavor || "animals"} when music plays, freeze when it stops.`, "Discuss how it felt to stop suddenly."] :
                                                            [`'Red Light, ${interestPrefix || "Green Monster"} Light': Adapt red-light green-light with the theme of ${interestFlavor || "monsters"}.`, "Discuss strategies for freezing quickly."];
-                        } else { // Default game if not movementKinesthetic or if movementKinesthetic is not primary
+                        } else { 
                             activity.steps = gradeLevel === "K-1" ? ["'Body Freek': Teacher calls out body parts, students touch them. If teacher says 'Freek!' instead of a body part, students must freeze.", "Discuss how it felt to stop suddenly."] :
                                                            ["'Color/Shape Switch': Students sort items by color. Teacher calls 'Switch!' and they must then sort by shape, inhibiting the previous rule.", "Discuss how they managed to switch rules."];
                         }
@@ -816,7 +832,7 @@
                     break;
                 case "Strategy Instruction":
                     activity.title = `Unlocking ${skillName} with a Super ${interestPrefix}Strategy!`;
-                    let strategy = `the 'Task Plan Attack' (Break it down, Order steps, Time estimate, Attack the first step, Check progress)`; // Generic placeholder
+                    let strategy = `the 'Task Plan Attack' (Break it down, Order steps, Time estimate, Attack the first step, Check progress)`;
                     if (skill.includes("Emotional Regulation")) strategy = `the '${interestPrefix || "Calm Down"} Combo' (Stop, Name feeling, Belly breathe, Choose a calm thought)`;
                     if (skill.includes("Self-Monitoring")) strategy = `the '${interestPrefix || "Self-Check"} Stoplight' (Red: Am I stuck? Yellow: Do I need to re-read? Green: I understand!)`;
                     activity.description = `We're learning a powerful strategy today called '${strategy}' to help us master ${skillName.toLowerCase()} when working on things like ${interestFlavor || "our projects"}, and practice ${selText} (SEL).`;
@@ -832,7 +848,7 @@
                     activity.title = `Mission: ${skillName} in Action with ${interestPrefix || "a Fun Project"}!`;
                     let task = `design a poster about ${interestFlavor || "classroom safety"} that teaches younger students about one of our classroom rules. This will require good ${skillName.toLowerCase()}.`;
                      if (skill.includes("Organization")) task = `work as a team to sort and label a mixed box of ${interestFlavor || "art"} supplies in 15 minutes.`;
-                     if (preferredModalities.includes('artsCrafts') || modalityInfluenceApplied && chosenActivityType === "Hands-On Task/Project Intro") { // Favor arts if preferred
+                     if (preferredModalities.includes('artsCrafts') || (modalityInfluenceApplied && chosenActivityType === "Hands-On Task/Project Intro")) {
                         task = `create a collage or diorama about ${interestFlavor || "a favorite book"} using various materials, which will require good ${skillName.toLowerCase()}.`;
                      }
                     activity.description = `Time for a hands-on mission! We'll ${task}. This project will need us to use our ${skillName.toLowerCase()} skills and practice ${selCompetencies.join(' & ').toLowerCase()} (SEL).`;
@@ -844,17 +860,18 @@
                     ];
                     activity.differentiation = "K-1: Simple task with a model. 4-6: More open-ended project.";
                     break;
-                case "Case Study/Problem-Solving": // For 4-6
+                case "Case Study/Problem-Solving": 
                      activity.title = `Detective Work: Solving ${interestPrefix}Problems with ${skillName}`;
                      let caseStudy = `A student keeps forgetting their homework about ${interestFlavor || "history"}. What EF skills might be challenging, and what 3 strategies could they try?`;
                      if (skill.includes("Cognitive Flexibility")) caseStudy = `A group project about ${interestFlavor || "science"} isn't going well because members disagree on the main idea. How can they use cognitive flexibility?`;
                      activity.description = `Let's put on our detective hats! We'll analyze a situation: "${caseStudy}". We need ${skillName.toLowerCase()} skills and ${selText} (SEL).`;
-                     activity.steps = [ /* ... as before ... */ ];
+                     activity.steps = ["Present the case study or problem scenario.", "In small groups, students discuss the problem, identify the EF/SEL skills involved, and brainstorm potential solutions or strategies.", "Each group shares their top 1-2 solutions and explains their reasoning.", "Class discusses the most effective or ethical solutions."];
+                     if (preferredModalities.includes('discussionOriented') && !modalityInfluenceApplied) activity.differentiation += ` Facilitate a structured debate or Socratic seminar around the case study.`;
                      break;
-                case "Goal Setting & Planning Session": // For 4-6
+                case "Goal Setting & Planning Session": 
                     activity.title = `My ${interestPrefix}${skillName} Goal & Action Plan`;
                     activity.description = `Today, we'll set a personal goal related to ${skillName.toLowerCase()} (maybe for your ${interestFlavor || "hobbies"}?) and make a plan. This is key for ${selText} (SEL).`;
-                    activity.steps = [ /* ... as before ... */ ];
+                    activity.steps = ["Discuss the importance of setting SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound) in an age-appropriate way.", `Students choose one aspect of ${skillName.toLowerCase()} they want to improve (e.g., 'I will start my ${interestFlavor || "morning work"} within 2 minutes of the bell').`, "Guide them to write down their goal and 1-2 simple action steps to help them achieve it this week.", "Optional: Share goals with a partner for accountability. Schedule a brief check-in later in the week."];
                     break;
                 default: 
                      activity.title = `Exploring ${skillName} with ${interestPrefix || "Activities"}`;
@@ -862,21 +879,21 @@
                      activity.steps = [`Discuss what ${skillName} means, using examples related to ${interestFlavor || 'school'}.`, "Engage in a teacher-led activity focusing on the skill.", "Share experiences."];
             }
 
-            // Add general differentiation based on modality if not directly handled by chosenActivityType logic and not already applied
             if (!modalityInfluenceApplied && preferredModalities && preferredModalities.length > 0 && activity.differentiation) {
-                if (preferredModalities.includes('artsCrafts') && !activity.differentiation.toLowerCase().includes('art') && !activity.differentiation.toLowerCase().includes('craft')) {
+                const currentDiff = activity.differentiation ? activity.differentiation.toLowerCase() : "";
+                if (preferredModalities.includes('artsCrafts') && !currentDiff.includes('art') && !currentDiff.includes('craft')) {
                     activity.differentiation += ` For an arts & crafts variation, have students draw or build something related to the ${skillName} strategy or a ${interestFlavor || 'lesson concept'}.`;
                 }
-                if (preferredModalities.includes('storytellingDrama') && chosenActivityType !== 'Role-Play' && !activity.differentiation.toLowerCase().includes('story') && !activity.differentiation.toLowerCase().includes('drama')) {
+                if (preferredModalities.includes('storytellingDrama') && chosenActivityType !== 'Role-Play' && !currentDiff.includes('story') && !currentDiff.includes('drama')) {
                      activity.differentiation += ` To incorporate storytelling, create a short story about a character (perhaps a ${interestFlavor || "student"}) using (or struggling with) ${skillName}.`;
                 }
-                 if (preferredModalities.includes('techIntegration') && !activity.differentiation.toLowerCase().includes('tech') && !activity.differentiation.toLowerCase().includes('digital') && !activity.differentiation.toLowerCase().includes('online')) {
+                 if (preferredModalities.includes('techIntegration') && !currentDiff.includes('tech') && !currentDiff.includes('digital') && !currentDiff.includes('online')) {
                      activity.differentiation += ` Explore educational apps or websites that reinforce ${skillName}, possibly with a ${interestFlavor || ''} theme if available.`;
                  }
-                 if (preferredModalities.includes('movementKinesthetic') && chosenActivityType !== 'Game' && !activity.differentiation.toLowerCase().includes('movement')) { // if game, it's handled above
+                 if (preferredModalities.includes('movementKinesthetic') && chosenActivityType !== 'Game' && !currentDiff.includes('movement')) {
                     activity.differentiation += ` Add a movement component: e.g., students physically move to different 'stations' for steps of a plan, or act out emotions.`;
                  }
-                 if (preferredModalities.includes('discussionOriented') && chosenActivityType !== 'Case Study/Problem-Solving' && !activity.differentiation.toLowerCase().includes('discuss')) {
+                 if (preferredModalities.includes('discussionOriented') && chosenActivityType !== 'Case Study/Problem-Solving' && !currentDiff.includes('discuss')) {
                     activity.differentiation += ` Emphasize partner talks or small group discussions about the strategies or scenarios.`;
                  }
             }
@@ -886,9 +903,8 @@
         function getReflection(skill, gradeLevel, selCompetencies, studentInterests = [], preferredModalities = []) {
             const skillName = generateUniqueSkillName(skill);
             const selText = selCompetencies[0].toLowerCase(); 
-            let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "something you enjoy";
-            let modalityUsed = preferredModalities.length > 0 ? `learning through ${preferredModalities.join(' and ')}` : "today's activity";
-
+            let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "something you enjoy";
+            let modalityUsed = preferredModalities.length > 0 ? `learning through ${preferredModalities.map(m=>m.replace(/([A-Z0-9])/g, ' $1').toLowerCase().trim()).join(' and ')}` : "today's activity";
 
             let questions = [
                 `"What was the main skill we focused on today (${skillName.toLowerCase()})? How did you use it during ${modalityUsed}, maybe when thinking about ${randomInterest}?"`,
@@ -908,7 +924,7 @@
 
         function getClosing(skill, gradeLevel, studentInterests = []) {
             const skillName = generateUniqueSkillName(skill);
-            let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "your favorite things";
+            let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "your favorite things";
             if (Math.random() < 0.75) { 
                 let closingPrompt = `Great work today, ${skillName.toLowerCase()} superstars! For your 'mission' this week, try to consciously use one strategy we discussed, maybe even when you're busy with ${randomInterest}.`;
                 if (gradeLevel === "K-1") closingPrompt = `Awesome job! Remember to use your ${skillName.toLowerCase()} listening ears and thinking caps, especially when you're playing with ${randomInterest}!`;
@@ -942,7 +958,6 @@
                 tips.push(`Allow students to represent their understanding of ${skillName} or related strategies through drawing, building, or crafting, which can be a powerful way to solidify concepts.`);
             }
 
-
             if (Math.random() < 0.85) return getRandomElement(tips); 
             return "";
         }
@@ -952,7 +967,8 @@
             const uniqueSkillsText = generateSkillList(skillsRaw);
             let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "various topics";
             let capitalizedInterests = studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(' or ');
-            if (!capitalizedInterests) capitalizedInterests = randomInterest;
+            if (!capitalizedInterests && randomInterest) capitalizedInterests = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
+            else if (!capitalizedInterests) capitalizedInterests = "various topics";
 
 
             ideas += `<li><strong>Morning Meeting/Circle Time:</strong> Start the day with a quick game or discussion prompt related to "${uniqueSkillsText}". Reinforce vocabulary, perhaps using examples from ${capitalizedInterests}.</li>`;
@@ -986,7 +1002,7 @@
             tips += `</ul>`;
             return tips;
         }
-        console.log("Initial script setup complete.");
+        console.log("Initial script setup complete. Event listeners are active."); // For debugging
     });
 </script>
 
