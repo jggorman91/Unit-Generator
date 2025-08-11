@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-6 Unit Plan Generator (Interactive & Enhanced - v3)</title>
+    <title>K-6 Unit Plan Generator (Interactive & Enhanced - v4)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <style>
-        /* ... your existing styles ... */
+        body { font-family: 'Inter', sans-serif; }
         .tooltip {
             position: absolute;
             background-color: #334155; /* slate-700 */
@@ -17,7 +20,7 @@
             z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+            transition: opacity 0.2s, visibility 0.2s;
             max-width: 300px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
@@ -38,70 +41,48 @@
             font-weight: bold;
             margin-left: 6px;
             cursor: help;
-            border: 1px solid #cbd5e1; /* slate-300 */
+            user-select: none;
         }
         .tooltip-trigger:hover, .tooltip-trigger:focus {
             background-color: #cbd5e1; /* slate-300 */
-        }
-        .skills-list {
-            padding: 0.75rem; /* p-3 */
-        }
-        .regenerate-section-btn {
-            cursor: pointer;
-            color: #0ea5e9; /* sky-500 */
-            font-size: 0.9em;
-            margin-left: 8px;
-            display: inline-block;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-        .regenerate-section-btn:hover {
-            background-color: #e0f2fe; /* sky-100 */
+            outline: none;
         }
 
-
+        /* Print Styles */
         @media print {
             @page {
-                margin-top: 20mm;
-                margin-bottom: 20mm;
-                margin-left: 15mm;
-                margin-right: 15mm;
+                margin: 20mm 15mm;
             }
-            body * {
-                visibility: hidden;
+            body > *:not(#resultsContainer) {
+                display: none !important;
             }
             #resultsContainer, #resultsContainer * {
                 visibility: visible;
             }
-            #results {
-                width: auto;
-                visibility: visible;
-            }
-            header, form, footer, #printButton, #generateButton, #loadingIndicator, #generationProgressBarContainer,
-            #unitPlanForm div:not(#resultsContainer):not(#results),
-            #unitPlanForm label, #unitPlanForm select, #unitPlanForm h3, .tooltip, .tooltip-trigger, .regenerate-section-btn {
+             #results {
+                box-shadow: none;
+                border: none;
+             }
+            .no-print {
                 display: none !important;
-                visibility: hidden !important;
             }
             .page-break {
                 page-break-after: always;
             }
         }
-        /* ... rest of your styles ... */
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body class="bg-slate-100 text-slate-800 p-4 md:p-8">
+
     <div id="skillTooltip" class="tooltip"></div>
+
     <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg p-6 md:p-10">
-        <header class="mb-8 text-center">
+        <header class="mb-8 text-center no-print">
             <h1 class="text-4xl font-bold text-sky-700" style="font-family: 'Pacifico', cursive;">Interactive Unit Plan Generator</h1>
             <p class="text-slate-600 mt-2">Customize your K-6 unit plans for Executive Function and Social-Emotional Learning.</p>
         </header>
 
-        <form id="unitPlanForm" class="space-y-6">
+        <form id="unitPlanForm" class="space-y-6 no-print">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="gradeLevel" class="block text-sm font-medium text-slate-700 mb-1">Grade Level:</label>
@@ -114,11 +95,11 @@
                 <div>
                     <label for="numWeeks" class="block text-sm font-medium text-slate-700 mb-1">Unit Length:</label>
                     <select id="numWeeks" name="numWeeks" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                        <option value="1">1 Week (Paid Tier Feature Preview - Max 2 in Free)</option>
+                        <option value="1">1 Week</option>
                         <option value="2">2 Weeks</option>
-                        <option value="3">3 Weeks (Paid Tier Feature)</option>
-                        <option value="4">4 Weeks (Paid Tier Feature)</option>
-                        </select>
+                        <option value="3">3 Weeks </option>
+                        <option value="4">4 Weeks </option>
+                    </select>
                 </div>
                 <div>
                     <label for="lessonsPerWeek" class="block text-sm font-medium text-slate-700 mb-1">Sessions/Week:</label>
@@ -130,89 +111,66 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-sky-600 mb-2">Executive Functioning Skills:</h3>
-                    <div id="efSkillsContainer" class="skills-list space-y-2 max-h-60 overflow-y-auto p-2 border rounded-md border-slate-200">
-                        <p>Loading EF skills...</p> 
+                <fieldset>
+                    <legend class="text-lg font-semibold text-sky-600 mb-2">Executive Functioning Skills:</legend>
+                    <div id="efSkillsContainer" class="space-y-2 max-h-60 overflow-y-auto p-3 border rounded-md border-slate-200">
+                        <p>Loading EF skills...</p>
                     </div>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-rose-600 mb-2">Behavior Skill Areas:</h3>
-                    <div id="behSkillsContainer" class="skills-list space-y-2 max-h-60 overflow-y-auto p-2 border rounded-md border-slate-200">
-                        <p>Loading Behavior skills...</p> 
+                </fieldset>
+                <fieldset>
+                    <legend class="text-lg font-semibold text-rose-600 mb-2">Behavior Skill Areas:</legend>
+                    <div id="behSkillsContainer" class="space-y-2 max-h-60 overflow-y-auto p-3 border rounded-md border-slate-200">
+                        <p>Loading Behavior skills...</p>
                     </div>
-                </div>
+                </fieldset>
             </div>
 
-            <div>
-                <h3 class="text-lg font-semibold text-slate-700 mb-2">Primary Focus Skills (Optional):</h3>
-                <p class="text-xs text-slate-500 mb-2">Select 1 or 2 skills from your checked lists above to give them more emphasis in the unit plan.</p>
+            <fieldset>
+                <legend class="text-lg font-semibold text-slate-700">Primary Focus Skills (Optional)</legend>
+                <p class="text-xs text-slate-500 mb-2" id="primary-skills-desc">Select 1 or 2 skills from your checked lists above to give them more emphasis.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="primarySkill1" class="block text-sm font-medium text-slate-700 mb-1">Primary Skill 1:</label>
-                        <select id="primarySkill1" name="primarySkill1" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                            <option value="">-- None --</option>
+                        <select id="primarySkill1" name="primarySkill1" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm disabled:bg-slate-200" disabled aria-describedby="primary-skills-desc">
+                            <option value="">-- Check a skill above --</option>
                         </select>
                     </div>
                     <div>
                         <label for="primarySkill2" class="block text-sm font-medium text-slate-700 mb-1">Primary Skill 2:</label>
-                        <select id="primarySkill2" name="primarySkill2" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                            <option value="">-- None --</option>
+                        <select id="primarySkill2" name="primarySkill2" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm disabled:bg-slate-200" disabled aria-describedby="primary-skills-desc">
+                             <option value="">-- Check a skill above --</option>
                         </select>
                     </div>
                 </div>
-            </div>
+            </fieldset>
 
             <div>
                 <label for="studentInterests" class="block text-sm font-medium text-slate-700 mb-1">Student Interests (Optional, comma-separated):</label>
                 <input type="text" id="studentInterests" name="studentInterests" placeholder="e.g., dinosaurs, space, drawing" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                <p class="text-xs text-slate-500 mt-1">Helps tailor examples and scenarios.</p>
+                 <p class="text-xs text-slate-500 mt-1">Helps tailor examples and scenarios.</p>
             </div>
-
-            <div>
-                <h3 class="text-lg font-semibold text-slate-700 mb-2">Preferred Teaching Modalities (Optional):</h3>
-                <p class="text-xs text-slate-500 mb-2">Select up to two preferred styles to influence activity suggestions.</p>
-                <div id="teachingModalitiesContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="gameBased" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Game-Based</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="movementKinesthetic" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Movement/Kinesthetic</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="artsCrafts" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Arts & Crafts</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="storytellingDrama" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Storytelling/Drama</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="discussionOriented" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Discussion-Oriented</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="teachingModalities" value="techIntegration" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
-                        <span class="text-sm text-slate-700">Tech Integration</span>
-                    </label>
-                </div>
-            </div>
-
-            <div id="error-message" class="text-red-500 text-sm hidden">Please select at least one skill from the checkboxes above.</div>
             
-            <div id="generationProgressBarContainer" class="hidden w-full bg-slate-200 rounded-full h-2.5 mb-4">
+            <fieldset>
+                <legend class="text-lg font-semibold text-slate-700">Preferred Teaching Modalities (Optional)</legend>
+                 <p class="text-xs text-slate-500 mb-2">Select up to two preferred styles to influence activity suggestions.</p>
+                <div id="teachingModalitiesContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+                    <!-- Modalities will be dynamically populated by JS for maintainability -->
+                </div>
+            </fieldset>
+
+            <div id="errorMessage" class="text-red-600 text-sm hidden font-medium" role="alert" aria-live="assertive">Please select at least one skill.</div>
+
+            <div id="generationProgressBarContainer" class="hidden w-full bg-slate-200 rounded-full h-2.5">
                 <div id="generationProgressBar" class="bg-sky-600 h-2.5 rounded-full" style="width: 0%"></div>
             </div>
 
-            <button type="button" id="generateButton" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-transform transform hover:scale-105 duration-150 ease-in-out">
+            <button type="submit" id="generateButton" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-transform transform hover:scale-105">
                 Generate Unit Plan
             </button>
         </form>
 
-        <div id="loadingIndicator" class="hidden text-center my-8">
-            <div class="inline-flex items-center">
+        <div id="loadingIndicator" class="hidden text-center my-8" aria-live="assertive">
+             <div class="inline-flex items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -222,14 +180,14 @@
         </div>
 
         <div id="resultsContainer" class="mt-10 hidden">
-             <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 no-print">
                 <h2 class="text-2xl font-bold text-sky-700">Generated Unit Plan</h2>
                 <div>
-                    <button type="button" id="exportPdfButton" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition-colors duration-150 ease-in-out text-sm mr-2" title="Export to PDF (Paid Feature)">
+                    <button type="button" id="exportPdfButton" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 text-sm mr-2" title="Export to PDF (Premium Feature)">
                         Export PDF
                     </button>
-                    <button type="button" id="printButton" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50 transition-colors duration-150 ease-in-out text-sm">
-                        Print Unit Plan
+                    <button type="button" id="printButton" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50 text-sm">
+                        Print
                     </button>
                 </div>
             </div>
@@ -238,926 +196,498 @@
         </div>
     </div>
 
-    <footer class="text-center mt-12 pb-8">
-        <p class="text-sm text-slate-500">Content generated is for educational purposes and should be reviewed by a qualified educator before implementation. All generated content is original and copyright-safe, based on general educational principles and inspired by evidence-based practices and developmental knowledge. Ensure that any student interest inputs are handled appropriately according to privacy best practices. Some features like extended plan lengths or PDF export may be part of a premium offering.</p>
-        <p class="text-xs text-slate-400 mt-1">Tailwind CSS CDN is for development purposes. For production, follow Tailwind CSS installation guidelines.</p>
+    <footer class="text-center mt-12 pb-8 no-print">
+         <p class="text-sm text-slate-500">Content generated is for educational purposes and should be reviewed by a qualified educator. Some features may be part of a premium offering.</p>
     </footer>
 
 <script>
-    // --- SKILL DEFINITIONS ---
-    const SKILL_DEFINITIONS = {
-        "Working Memory": "The ability to hold and manipulate information in mind for short periods. For example, remembering multi-step instructions or details of a story.",
-        "Inhibition (Impulse Control)": "The capacity to pause and think before acting or speaking. Helps resist distractions or urges. Essential for following rules and delaying gratification.",
-        "Cognitive Flexibility": "The ability to switch perspectives, adapt to new tasks, rules, or unexpected changes. Enables handling changes and finding multiple solutions to problems.",
-        "Planning and Organization": "The ability to set goals, develop steps to reach them, and organize materials, information, or ideas. Vital for projects and tasks.",
-        "Emotional Regulation (EF)": "The ability to understand and manage one's emotions effectively. Helps cope with frustration, excitement, or disappointment in an appropriate manner.",
-        "Initiation": "The ability to begin tasks promptly and independently, without procrastination. Overcoming inertia to start an activity.",
-        "Self-Monitoring (EF)": "The ability to monitor and evaluate one's own performance, behavior, or understanding, including noticing mistakes and checking work. Part of metacognition.",
-        "Time Management": "The ability to estimate time needed for tasks, prioritize activities, meet deadlines, and use time effectively.",
-        "Social Skills": "Skills for interacting positively and effectively with others, including verbal and non-verbal communication, cooperation, sharing, and understanding social cues.",
-        "Emotional Regulation (BS)": "Managing emotional reactions and expressions appropriately in social contexts and various situations. Focuses on the behavioral output of emotional states. (Related to EF Emotional Regulation).",
-        "Self-Monitoring (BS)": "Awareness and adjustment of one's behavior in social and learning environments based on feedback (internal or external) and self-assessment. (Related to EF Self-Monitoring).",
-        "Impulse Control (BS)": "Controlling behavioral urges and reactions by pausing and thinking before acting, particularly in response to immediate desires or provocations. (Related to EF Inhibition).",
-        "Adaptive Behavior": "Skills needed for daily living, problem-solving in everyday situations, and adjusting to different environments and social demands. Includes practical life skills.",
-        "Communication Skills": "Effectively conveying and receiving information, ideas, and feelings, both verbally (e.g., asking for help, expressing needs) and non-verbally (e.g., body language).",
-        "Conflict Resolution": "Skills to peacefully and constructively resolve disagreements and problems with others, including listening, negotiation, and finding compromises.",
-        "Attention and Focus": "The ability to sustain concentration on tasks, filter out distractions, and direct mental effort appropriately, even when tasks are challenging or less interesting. (Related to EF skills like inhibition)."
-    };
-
-    const ALL_EF_SKILLS = [
-        { value: "Working Memory", display: "Working Memory" },
-        { value: "Inhibition (Impulse Control)", display: "Inhibition (Impulse Control)" },
-        { value: "Cognitive Flexibility", display: "Cognitive Flexibility" },
-        { value: "Planning and Organization", display: "Planning and Organization" },
-        { value: "Emotional Regulation (EF)", display: "Emotional Regulation (EF)" },
-        { value: "Initiation", display: "Initiation" },
-        { value: "Self-Monitoring (EF)", display: "Self-Monitoring (EF)" },
-        { value: "Time Management", display: "Time Management" }
-    ];
-
-    const ALL_BEH_SKILLS = [
-        { value: "Social Skills", display: "Social Skills" },
-        { value: "Emotional Regulation (BS)", display: "Emotional Regulation (BS)" },
-        { value: "Self-Monitoring (BS)", display: "Self-Monitoring (BS)" },
-        { value: "Impulse Control (BS)", display: "Impulse Control (BS)" },
-        { value: "Adaptive Behavior", display: "Adaptive Behavior" },
-        { value: "Communication Skills", display: "Communication Skills" },
-        { value: "Conflict Resolution", display: "Conflict Resolution" },
-        { value: "Attention and Focus", display: "Attention and Focus" }
-    ];
-
-    const DEVELOPMENTAL_NOTES = {
-        "K-1": "Focus on 'Foundational Regulator to Guided Participant'. Students are learning routines, adult guidance, and basic impulse control with support. Socially, they are 'Social Initiators to Emerging Peers', learning simple rules. Language is 'Foundational Communicator to Emerging Conversationalist'. Activities should be short, concrete, and highly scaffolded.",
-        "2-3": "Focus on 'Emerging Self-Manager to Flexible Adapter'. Students follow routines with less prompting, show early self-regulation and behavioral awareness. Socially, 'Collaborative Partner to Connected Participant', starting cooperation. Language is 'Functional Speaker to Social Interpreter', maintaining conversations. Activities can involve more steps and some partner work.",
-        "4-6": "Focus on 'Intentional Strategist to Reflective Adapter' (4-5) and moving towards 'Independent Regulator to Autonomous Problem-Solver' (6th). Students apply strategies, reflect on behavior. Socially, 'Social Navigator to Empathetic Ally', forming friendships, resolving conflicts. Language is 'Contextual Communicator to Purposeful Speaker', adapting language and discussing with intent. Activities can be more complex, involve group work, and encourage metacognition."
-    };
-
-    function getRandomElement(arr) {
-        if (!arr || arr.length === 0) return "";
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
-    
-    const CASEL_COMPETENCIES_MAP = { 
-        "Working Memory": ["Self-Management", "Responsible Decision-Making"],
-        "Inhibition (Impulse Control)": ["Self-Management", "Relationship Skills"],
-        "Cognitive Flexibility": ["Social Awareness", "Responsible Decision-Making", "Self-Management"],
-        "Planning and Organization": ["Self-Management", "Responsible Decision-Making"],
-        "Emotional Regulation (EF)": ["Self-Awareness", "Self-Management"],
-        "Initiation": ["Self-Management", "Responsible Decision-Making"],
-        "Self-Monitoring (EF)": ["Self-Awareness", "Responsible Decision-Making", "Self-Management"],
-        "Time Management": ["Self-Management", "Responsible Decision-Making"],
-        "Social Skills": ["Social Awareness", "Relationship Skills"],
-        "Emotional Regulation (BS)": ["Self-Awareness", "Self-Management", "Relationship Skills"],
-        "Self-Monitoring (BS)": ["Self-Awareness", "Responsible Decision-Making", "Self-Management"],
-        "Impulse Control (BS)": ["Self-Management", "Relationship Skills"],
-        "Adaptive Behavior": ["Self-Management", "Responsible Decision-Making", "Social Awareness"],
-        "Communication Skills": ["Relationship Skills", "Social Awareness"],
-        "Conflict Resolution": ["Relationship Skills", "Responsible Decision-Making", "Social Awareness"],
-        "Attention and Focus": ["Self-Management"]
-    };
-
-    function getAssociatedSECompetencies(skill) {
-        return CASEL_COMPETENCIES_MAP[skill] || ["Self-Management"]; 
-    }
-
-    function generateUniqueSkillName(skill) { 
-        if (!skill) return "";
-        let displayName = skill;
-        if (skill.includes("(EF)")) displayName = skill.replace(" (EF)", " (Executive Functioning)");
-        else if (skill.includes("(BS)")) { 
-            if (skill === "Emotional Regulation (BS)") displayName = "Behavioral Emotional Regulation";
-            else if (skill === "Self-Monitoring (BS)") displayName = "Behavioral Self-Monitoring";
-            else if (skill === "Impulse Control (BS)") displayName = "Behavioral Impulse Control";
-            else displayName = skill.replace(" (BS)", " (Behavioral)"); 
-        }
-        else if (skill === "Inhibition (Impulse Control)") displayName = "Inhibition (EF Impulse Control)";
-        return displayName;
-    }
-    
-    function generateSkillList(skillsRaw) { 
-        const skills = [...new Set(skillsRaw.map(s => generateUniqueSkillName(s)).filter(Boolean))];
-        if (skills.length === 0) return "selected focus areas";
-        if (skills.length === 1) return skills[0];
-        if (skills.length === 2) return skills.join(' and ');
-        return skills.slice(0, -1).join(', ') + ', and ' + skills.slice(-1);
-    }
-
-    // Helper for Bloom's verbs - basic version
-    function getBloomVerbs(level = "remember") {
-        const verbs = {
+// Encapsulate all logic in a single object to avoid polluting the global scope
+const UnitPlanGenerator = {
+    // --- 1. CONFIGURATION & DATA ---
+    config: {
+        isPaidTier: false, // In a real app, this would be determined by user login
+        maxFreeWeeks: 2,
+        skillDefinitions: {
+             "Working Memory": "The ability to hold and manipulate information in mind for short periods. For example, remembering multi-step instructions or details of a story.",
+             "Inhibition (Impulse Control)": "The capacity to pause and think before acting or speaking. Helps resist distractions or urges. Essential for following rules and delaying gratification.",
+             "Cognitive Flexibility": "The ability to switch perspectives, adapt to new tasks, rules, or unexpected changes. Enables handling changes and finding multiple solutions to problems.",
+             "Planning and Organization": "The ability to set goals, develop steps to reach them, and organize materials, information, or ideas. Vital for projects and tasks.",
+             "Emotional Regulation (EF)": "The ability to understand and manage one's emotions effectively. Helps cope with frustration, excitement, or disappointment in an appropriate manner.",
+             "Initiation": "The ability to begin tasks promptly and independently, without procrastination. Overcoming inertia to start an activity.",
+             "Self-Monitoring (EF)": "The ability to monitor and evaluate one's own performance, behavior, or understanding, including noticing mistakes and checking work. Part of metacognition.",
+             "Time Management": "The ability to estimate time needed for tasks, prioritize activities, meet deadlines, and use time effectively.",
+             "Social Skills": "Skills for interacting positively and effectively with others, including verbal and non-verbal communication, cooperation, sharing, and understanding social cues.",
+             "Emotional Regulation (BS)": "Managing emotional reactions and expressions appropriately in social contexts and various situations. Focuses on the behavioral output of emotional states.",
+             "Self-Monitoring (BS)": "Awareness and adjustment of one's behavior in social and learning environments based on feedback (internal or external) and self-assessment.",
+             "Impulse Control (BS)": "Controlling behavioral urges and reactions by pausing and thinking before acting, particularly in response to immediate desires or provocations.",
+             "Adaptive Behavior": "Skills needed for daily living, problem-solving in everyday situations, and adjusting to different environments and social demands. Includes practical life skills.",
+             "Communication Skills": "Effectively conveying and receiving information, ideas, and feelings, both verbally (e.g., asking for help, expressing needs) and non-verbally (e.g., body language).",
+             "Conflict Resolution": "Skills to peacefully and constructively resolve disagreements and problems with others, including listening, negotiation, and finding compromises.",
+             "Attention and Focus": "The ability to sustain concentration on tasks, filter out distractions, and direct mental effort appropriately, even when tasks are challenging or less interesting."
+        },
+        efSkills: [
+             { value: "Working Memory", display: "Working Memory" },
+             { value: "Inhibition (Impulse Control)", display: "Inhibition (Impulse Control)" },
+             { value: "Cognitive Flexibility", display: "Cognitive Flexibility" },
+             { value: "Planning and Organization", display: "Planning and Organization" },
+             { value: "Emotional Regulation (EF)", display: "Emotional Regulation (EF)" },
+             { value: "Initiation", display: "Initiation" },
+             { value: "Self-Monitoring (EF)", display: "Self-Monitoring (EF)" },
+             { value: "Time Management", display: "Time Management" }
+        ],
+        behSkills: [
+            { value: "Social Skills", display: "Social Skills" },
+            { value: "Emotional Regulation (BS)", display: "Emotional Regulation (BS)" },
+            { value: "Self-Monitoring (BS)", display: "Self-Monitoring (BS)" },
+            { value: "Impulse Control (BS)", display: "Impulse Control (BS)" },
+            { value: "Adaptive Behavior", display: "Adaptive Behavior" },
+            { value: "Communication Skills", display: "Communication Skills" },
+            { value: "Conflict Resolution", display: "Conflict Resolution" },
+            { value: "Attention and Focus", display: "Attention and Focus" }
+        ],
+        teachingModalities: [
+            { value: "gameBased", display: "Game-Based" },
+            { value: "movementKinesthetic", display: "Movement/Kinesthetic" },
+            { value: "artsCrafts", display: "Arts & Crafts" },
+            { value: "storytellingDrama", display: "Storytelling/Drama" },
+            { value: "discussionOriented", display: "Discussion-Oriented" },
+            { value: "techIntegration", display: "Tech Integration" }
+        ],
+        developmentalNotes: {
+            "K-1": "Focus on 'Foundational Regulator to Guided Participant'. Students are learning routines, adult guidance, and basic impulse control with support. Socially, they are 'Social Initiators to Emerging Peers', learning simple rules. Language is 'Foundational Communicator to Emerging Conversationalist'. Activities should be short, concrete, and highly scaffolded.",
+            "2-3": "Focus on 'Emerging Self-Manager to Flexible Adapter'. Students follow routines with less prompting, show early self-regulation and behavioral awareness. Socially, 'Collaborative Partner to Connected Participant', starting cooperation. Language is 'Functional Speaker to Social Interpreter', maintaining conversations. Activities can involve more steps and some partner work.",
+            "4-6": "Focus on 'Intentional Strategist to Reflective Adapter' (4-5) and moving towards 'Independent Regulator to Autonomous Problem-Solver' (6th). Students apply strategies, reflect on behavior. Socially, 'Social Navigator to Empathetic Ally', forming friendships, resolving conflicts. Language is 'Contextual Communicator to Purposeful Speaker', adapting language and discussing with intent. Activities can be more complex, involve group work, and encourage metacognition."
+        },
+        caselCompetenciesMap: { 
+            "Working Memory": ["Self-Management", "Responsible Decision-Making"], "Inhibition (Impulse Control)": ["Self-Management", "Relationship Skills"], "Cognitive Flexibility": ["Social Awareness", "Responsible Decision-Making", "Self-Management"], "Planning and Organization": ["Self-Management", "Responsible Decision-Making"], "Emotional Regulation (EF)": ["Self-Awareness", "Self-Management"], "Initiation": ["Self-Management", "Responsible Decision-Making"], "Self-Monitoring (EF)": ["Self-Awareness", "Responsible Decision-Making", "Self-Management"], "Time Management": ["Self-Management", "Responsible Decision-Making"], "Social Skills": ["Social Awareness", "Relationship Skills"], "Emotional Regulation (BS)": ["Self-Awareness", "Self-Management", "Relationship Skills"], "Self-Monitoring (BS)": ["Self-Awareness", "Responsible Decision-Making", "Self-Management"], "Impulse Control (BS)": ["Self-Management", "Relationship Skills"], "Adaptive Behavior": ["Self-Management", "Responsible Decision-Making", "Social Awareness"], "Communication Skills": ["Relationship Skills", "Social Awareness"], "Conflict Resolution": ["Relationship Skills", "Responsible Decision-Making", "Social Awareness"], "Attention and Focus": ["Self-Management"]
+        },
+        bloomVerbs: {
             remember: ["Define", "List", "Recall", "Name", "Identify", "Repeat", "State"],
             understand: ["Explain", "Summarize", "Describe", "Discuss", "Paraphrase", "Classify", "Report"],
             apply: ["Use", "Demonstrate", "Illustrate", "Solve", "Practice", "Choose", "Apply"],
             analyze: ["Compare", "Contrast", "Differentiate", "Organize", "Distinguish", "Examine", "Categorize"],
             evaluate: ["Justify", "Critique", "Assess", "Recommend", "Appraise", "Argue", "Support"],
             create: ["Design", "Develop", "Construct", "Formulate", "Invent", "Compose", "Plan (a new thing)"]
-        };
-        switch (level) {
-            case "K-1": return getRandomElement(verbs.remember.concat(verbs.understand));
-            case "2-3": return getRandomElement(verbs.understand.concat(verbs.apply));
-            case "4-6": return getRandomElement(verbs.apply.concat(verbs.analyze, verbs.evaluate)); // Could also include create for specific tasks
-            default: return getRandomElement(verbs.remember);
         }
-    }
+    },
 
+    // --- 2. APPLICATION STATE ---
+    state: {}, // Will be populated from form
 
-    try { 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DEBUG: DOM Content Loaded. Initializing script...");
+    // --- 3. DOM ELEMENTS ---
+    elements: {},
 
-            const generateButton = document.getElementById('generateButton');
-            const resultsContainer = document.getElementById('resultsContainer');
-            const resultsDiv = document.getElementById('results');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const progressBarContainer = document.getElementById('generationProgressBarContainer');
-            const progressBar = document.getElementById('generationProgressBar');
-            const errorMessageDiv = document.getElementById('error-message');
-            const printButton = document.getElementById('printButton');
-            const exportPdfButton = document.getElementById('exportPdfButton');
-            const skillTooltip = document.getElementById('skillTooltip'); 
-
-            const gradeLevelSelect = document.getElementById('gradeLevel');
-            const numWeeksSelect = document.getElementById('numWeeks');
-            const lessonsPerWeekSelect = document.getElementById('lessonsPerWeek');
-            const primarySkill1Select = document.getElementById('primarySkill1');
-            const primarySkill2Select = document.getElementById('primarySkill2');
-            const studentInterestsInput = document.getElementById('studentInterests');
+    // --- 4. EVENT HANDLERS ---
+    handlers: {
+        handleFormSubmit(event) {
+            event.preventDefault();
+            UnitPlanGenerator.ui.updateStateFromForm();
             
-            const efSkillsContainer = document.getElementById('efSkillsContainer');
-            const behSkillsContainer = document.getElementById('behSkillsContainer');
+            const { selectedEfSkills, selectedBehSkills } = UnitPlanGenerator.state;
+            const allSelectedSkills = [...selectedEfSkills, ...selectedBehSkills];
 
-            if (!skillTooltip) console.error("DEBUG: CRITICAL - Skill Tooltip element ('skillTooltip') NOT FOUND.");
+            if (allSelectedSkills.length === 0) {
+                UnitPlanGenerator.ui.showError("Please select at least one skill.");
+                return;
+            }
 
-            function populateSkillCheckboxes(container, skills, groupName, colorClass) {
-                if (!container) {
-                    console.error(`DEBUG: Container for ${groupName} is null or undefined. Cannot populate checkboxes.`);
-                    const elById = document.getElementById(groupName === 'efSkills' ? 'efSkillsContainer' : 'behSkillsContainer');
-                    if(elById) elById.innerHTML = `<p style="color: red; font-weight: bold;">Error: Container element for ${groupName} not found by script variable.</p>`;
-                    return;
-                }
-                container.innerHTML = ''; 
-                if (!skills || !Array.isArray(skills) || skills.length === 0) {
-                    console.warn(`DEBUG: No valid skills array provided for ${groupName}. Skills:`, skills);
-                    container.innerHTML = `<p>No skills to display for ${groupName}.</p>`;
-                    return;
-                }
+            UnitPlanGenerator.ui.hideError();
+            UnitPlanGenerator.ui.showLoading();
 
+            setTimeout(() => {
                 try {
-                    skills.forEach((skill, index) => {
-                        if (typeof skill !== 'object' || typeof skill.value !== 'string' || typeof skill.display !== 'string') {
-                            console.warn(`DEBUG: Invalid skill item at index ${index} for ${groupName}:`, skill);
-                            return; 
-                        }
-                        const label = document.createElement('label');
-                        label.className = `flex items-center space-x-3 p-2 rounded-md hover:bg-${colorClass}-50 transition-colors duration-150`;
-                        
-                        const input = document.createElement('input');
-                        input.type = 'checkbox';
-                        input.name = groupName;
-                        input.value = skill.value;
-                        input.id = `${groupName}_${skill.value.replace(/\s+/g, '_').replace(/[()]/g, '')}_${index}`; // Sanitize ID
-                        input.className = `form-checkbox h-5 w-5 text-${colorClass}-600 border-slate-400 rounded focus:ring-${colorClass}-500`;
-                        input.addEventListener('change', updatePrimarySkillDropdowns);
-
-                        const span = document.createElement('span');
-                        span.className = 'text-slate-700';
-                        span.textContent = skill.display;
-
-                        const tooltipTrigger = document.createElement('span');
-                        tooltipTrigger.className = 'tooltip-trigger';
-                        tooltipTrigger.textContent = '?';
-                        tooltipTrigger.setAttribute('data-skill', skill.value);
-                        tooltipTrigger.setAttribute('tabindex', '0'); 
-
-                        label.appendChild(input);
-                        label.appendChild(span);
-                        label.appendChild(tooltipTrigger);
-                        container.appendChild(label);
-                    });
-                } catch (e) {
-                    console.error(`DEBUG: Error during creation of checkbox items for ${groupName}:`, e.stack);
-                    container.innerHTML = `<p style="color: red;">Error loading skills for ${groupName}. Details in console.</p>`;
+                    const unitPlanHtml = UnitPlanGenerator.content.generateUnitPlan();
+                    UnitPlanGenerator.ui.displayResults(unitPlanHtml);
+                } catch (error) {
+                    console.error("Error during unit plan generation:", error.stack);
+                    UnitPlanGenerator.ui.displayError("An error occurred. Please check the console for details.");
+                } finally {
+                    UnitPlanGenerator.ui.hideLoading();
                 }
-                container.querySelectorAll('.tooltip-trigger').forEach(trigger => {
-                    trigger.addEventListener('mouseenter', showTooltip);
-                    trigger.addEventListener('mouseleave', hideTooltip);
-                    trigger.addEventListener('focus', showTooltip);
-                    trigger.addEventListener('blur', hideTooltip);
-                    trigger.addEventListener('click', (e) => { 
-                        e.preventDefault(); 
-                        if (skillTooltip && skillTooltip.classList.contains('visible') && skillTooltip.dataset.currentTrigger === trigger.dataset.skill) {
-                            hideTooltip();
-                        } else {
-                            showTooltip.call(trigger, e); 
-                        }
-                    });
-                });
+            }, 700);
+        },
+
+        handleSkillChange() {
+            UnitPlanGenerator.ui.updatePrimarySkillDropdowns();
+        },
+        
+        showTooltip(event) { 
+            const trigger = event.currentTarget;
+            const skillKey = trigger.dataset.skill;
+            const definition = UnitPlanGenerator.config.skillDefinitions[skillKey] || "No definition available.";
+            const tooltip = UnitPlanGenerator.elements.skillTooltip;
+            
+            tooltip.innerHTML = `<strong>${UnitPlanGenerator.content.getUniqueSkillName(skillKey)}:</strong><br>${definition}`;
+            
+            const rect = trigger.getBoundingClientRect();
+            let leftPos = rect.left + window.scrollX;
+            let topPos = rect.bottom + window.scrollY + 5;
+            
+            tooltip.style.left = `${leftPos}px`;
+            tooltip.style.top = `${topPos}px`;
+            tooltip.classList.add('visible');
+            
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {
+                tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
             }
-            
-            if (efSkillsContainer) populateSkillCheckboxes(efSkillsContainer, ALL_EF_SKILLS, 'efSkills', 'sky');
-            else console.error("DEBUG: EF Skills Container (efSkillsContainer) NOT FOUND in DOM during call. Cannot populate.");
-            
-            if (behSkillsContainer) populateSkillCheckboxes(behSkillsContainer, ALL_BEH_SKILLS, 'behSkills', 'rose');
-            else console.error("DEBUG: Behavior Skills Container (behSkillsContainer) NOT FOUND in DOM during call. Cannot populate.");
-            
-            updatePrimarySkillDropdowns();
-
-            function updatePrimarySkillDropdowns() {
-                const currentEfSkillsCheckboxes = efSkillsContainer ? Array.from(efSkillsContainer.querySelectorAll('input[name="efSkills"]')) : [];
-                const currentBehSkillsCheckboxes = behSkillsContainer ? Array.from(behSkillsContainer.querySelectorAll('input[name="behSkills"]')) : [];
-
-                const selectedSkills = [...currentEfSkillsCheckboxes, ...currentBehSkillsCheckboxes]
-                                         .filter(cb => cb.checked)
-                                         .map(cb => ({ value: cb.value, text: generateUniqueSkillName(cb.value) }));
-
-                [primarySkill1Select, primarySkill2Select].forEach(select => {
-                    if (!select) {
-                        console.warn("DEBUG: A primary skill select element is missing during update.");
-                        return;
-                    }
-                    const currentlySelectedValue = select.value; 
-                    select.innerHTML = '<option value="">-- None --</option>'; 
-                    let currentStillValid = false;
-                    selectedSkills.forEach(skill => {
-                        const option = document.createElement('option');
-                        option.value = skill.value; 
-                        option.textContent = skill.text; 
-                        select.appendChild(option);
-                        if (skill.value === currentlySelectedValue) currentStillValid = true;
-                    });
-                    select.value = currentStillValid ? currentlySelectedValue : "";
-                });
+            if (tooltipRect.bottom > window.innerHeight && tooltipRect.height < rect.top) {
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
             }
-            
-            function showTooltip(event) { 
-                const trigger = event.currentTarget; 
-                const skillKey = trigger.dataset.skill;
-                const definition = SKILL_DEFINITIONS[skillKey] || "No definition available.";
+        },
+
+        hideTooltip() { 
+            UnitPlanGenerator.elements.skillTooltip.classList.remove('visible');
+        },
+        
+        handleDocumentClick(event) {
+            const tooltip = UnitPlanGenerator.elements.skillTooltip;
+            if (tooltip.classList.contains('visible') && !tooltip.contains(event.target) && !event.target.classList.contains('tooltip-trigger')) {
+                UnitPlanGenerator.handlers.hideTooltip();
+            }
+        },
+
+        handlePrint() {
+            window.print();
+        },
+
+        handlePdfExport() {
+             alert("PDF Export is a premium feature. This would require a library like jsPDF or html2pdf.js.");
+        }
+    },
+
+    // --- 5. UI MANIPULATION ---
+    ui: {
+        populateCheckboxes(container, skills, groupName, colorClass, eventHandler) {
+             container.innerHTML = '';
+             skills.forEach((skill, index) => {
+                const label = document.createElement('label');
+                label.className = `flex items-center space-x-3 p-2 rounded-md hover:bg-${colorClass}-50 transition-colors`;
                 
-                if (!skillTooltip) { console.error("DEBUG: Skill tooltip element not found in showTooltip!"); return; }
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.name = groupName;
+                input.value = skill.value;
+                input.id = `${groupName}_${index}`;
+                input.className = `form-checkbox h-5 w-5 text-${colorClass}-600 border-slate-400 rounded focus:ring-${colorClass}-500`;
+                input.addEventListener('change', eventHandler);
 
-                skillTooltip.innerHTML = `<strong>${generateUniqueSkillName(skillKey)}:</strong><br>${definition}`;
-                skillTooltip.dataset.currentTrigger = skillKey; 
-
-                const rect = trigger.getBoundingClientRect();
-                let leftPos = rect.left + window.scrollX;
-                let topPos = rect.bottom + window.scrollY + 5;
+                const span = document.createElement('span');
+                span.className = 'text-slate-700';
+                span.textContent = skill.display;
                 
-                skillTooltip.style.left = `${leftPos}px`;
-                skillTooltip.style.top = `${topPos}px`; 
+                const tooltipTrigger = document.createElement('span');
+                tooltipTrigger.className = 'tooltip-trigger';
+                tooltipTrigger.textContent = '?';
+                tooltipTrigger.setAttribute('data-skill', skill.value);
+                tooltipTrigger.setAttribute('tabindex', '0');
+                tooltipTrigger.addEventListener('mouseenter', UnitPlanGenerator.handlers.showTooltip);
+                tooltipTrigger.addEventListener('mouseleave', UnitPlanGenerator.handlers.hideTooltip);
+                tooltipTrigger.addEventListener('focus', UnitPlanGenerator.handlers.showTooltip);
+                tooltipTrigger.addEventListener('blur', UnitPlanGenerator.handlers.hideTooltip);
                 
-                skillTooltip.classList.add('visible'); 
-                const tooltipRect = skillTooltip.getBoundingClientRect();
-                if (tooltipRect.right > window.innerWidth) {
-                    skillTooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
-                }
-                if (tooltipRect.left < 0) {
-                    skillTooltip.style.left = `${10 + window.scrollX}px`;
-                }
-                 if (tooltipRect.bottom > (window.innerHeight -10) && tooltipRect.height < rect.top) { 
-                     skillTooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
-                }
-            }
+                label.append(input, span, tooltipTrigger);
+                container.appendChild(label);
+            });
+        },
 
-            function hideTooltip() {
-                if (skillTooltip) {
-                   skillTooltip.classList.remove('visible');
-                   delete skillTooltip.dataset.currentTrigger;
-                }
-            }
+        populateModalities() {
+            const container = UnitPlanGenerator.elements.teachingModalitiesContainer;
+            container.innerHTML = '';
+            UnitPlanGenerator.config.teachingModalities.forEach(modality => {
+                 const label = document.createElement('label');
+                 label.className = 'flex items-center space-x-2';
+                 label.innerHTML = `
+                    <input type="checkbox" name="teachingModalities" value="${modality.value}" class="form-checkbox h-4 w-4 text-sky-600 border-slate-400 rounded focus:ring-sky-500">
+                    <span class="text-sm text-slate-700">${modality.display}</span>
+                 `;
+                 container.appendChild(label);
+            });
+        },
 
-            document.addEventListener('click', (e) => { 
-                if (skillTooltip && skillTooltip.classList.contains('visible')) {
-                    if (!skillTooltip.contains(e.target) && e.target && !e.target.classList.contains('tooltip-trigger')) {
-                        hideTooltip();
+        updatePrimarySkillDropdowns() {
+            const { efSkillsContainer, behSkillsContainer, primarySkill1, primarySkill2 } = UnitPlanGenerator.elements;
+            const checkedSkills = [
+                ...efSkillsContainer.querySelectorAll('input:checked'),
+                ...behSkillsContainer.querySelectorAll('input:checked')
+            ].map(cb => ({ value: cb.value, text: UnitPlanGenerator.content.getUniqueSkillName(cb.value) }));
+            
+            const selects = [primarySkill1, primarySkill2];
+            selects.forEach(select => {
+                const currentlySelected = select.value;
+                select.innerHTML = ''; 
+                
+                if (checkedSkills.length === 0) {
+                    select.innerHTML = '<option value="">-- Check a skill above --</option>';
+                    select.disabled = true;
+                } else {
+                    select.disabled = false;
+                    select.innerHTML = '<option value="">-- None --</option>';
+                    checkedSkills.forEach(skill => {
+                        const option = new Option(skill.text, skill.value);
+                        select.add(option);
+                    });
+                    if (checkedSkills.some(skill => skill.value === currentlySelected)) {
+                        select.value = currentlySelected;
                     }
                 }
             });
-            
-            if (printButton) { 
-                printButton.addEventListener('click', () => { window.print(); }); 
-            } else { console.error("DEBUG: Print button not found");}
+        },
 
-            if (exportPdfButton) {
-                exportPdfButton.addEventListener('click', () => {
-                    // This is where you'd integrate a PDF generation library like jsPDF or html2pdf
-                    // For now, it's a placeholder.
-                    alert("PDF Export is a conceptual paid feature. This would require a PDF generation library (e.g., jsPDF, html2pdf.js) and potentially server-side processing for advanced features.");
-                    // Example with html2pdf.js (you'd need to include the library script)
-                    /*
-                    if (typeof html2pdf !== 'undefined') {
-                        const element = document.getElementById('results');
-                        const opt = {
-                          margin:       [20, 15, 20, 15], // top, left, bottom, right in mm
-                          filename:     'unit-plan.pdf',
-                          image:        { type: 'jpeg', quality: 0.98 },
-                          html2canvas:  { scale: 2, useCORS: true }, // useCORS if you have external images
-                          jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-                        };
-                        html2pdf().from(element).set(opt).save();
-                    } else {
-                        alert("html2pdf library not found. PDF export unavailable.");
-                    }
-                    */
-                });
+        updateStateFromForm() {
+            const { elements, config } = UnitPlanGenerator;
+            let numWeeks = parseInt(elements.numWeeks.value);
+            if (!config.isPaidTier && numWeeks > config.maxFreeWeeks) {
+                alert(`Generating plans longer than ${config.maxFreeWeeks} weeks is a premium feature. The plan will be shortened.`);
+                numWeeks = config.maxFreeWeeks;
+                elements.numWeeks.value = numWeeks;
             }
 
+            UnitPlanGenerator.state = {
+                gradeLevel: elements.gradeLevel.value,
+                numWeeks: numWeeks,
+                lessonsPerWeek: parseInt(elements.lessonsPerWeek.value),
+                selectedEfSkills: Array.from(elements.efSkillsContainer.querySelectorAll('input:checked')).map(cb => cb.value),
+                selectedBehSkills: Array.from(elements.behSkillsContainer.querySelectorAll('input:checked')).map(cb => cb.value),
+                primarySkills: [elements.primarySkill1.value, elements.primarySkill2.value].filter(Boolean),
+                studentInterests: elements.studentInterests.value.trim().split(',').map(s => s.trim()).filter(Boolean),
+                preferredModalities: Array.from(elements.teachingModalitiesContainer.querySelectorAll('input:checked')).map(cb => cb.value)
+            };
+        },
+        
+        showLoading() {
+            this.elements.loadingIndicator.classList.remove('hidden');
+            this.elements.resultsContainer.classList.add('hidden');
+            this.elements.generationProgressBarContainer.classList.remove('hidden');
+            this.elements.generationProgressBar.style.width = '0%';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 15;
+                this.elements.generationProgressBar.style.width = `${Math.min(progress, 100)}%`;
+                if (progress >= 100) clearInterval(interval);
+            }, 100);
+        },
 
-            if (generateButton) {
-                generateButton.addEventListener('click', () => {
-                    console.log("DEBUG: Generate button clicked.");
-                    const gradeLevel = gradeLevelSelect.value;
+        hideLoading() {
+            this.elements.loadingIndicator.classList.add('hidden');
+            this.elements.generationProgressBarContainer.classList.add('hidden');
+        },
 
-                    const currentEfSkillsCheckboxes = efSkillsContainer ? Array.from(efSkillsContainer.querySelectorAll('input[name="efSkills"]')) : [];
-                    const currentBehSkillsCheckboxes = behSkillsContainer ? Array.from(behSkillsContainer.querySelectorAll('input[name="behSkills"]')) : [];
-                    const selectedEfSkills = currentEfSkillsCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
-                    const selectedBehSkills = currentBehSkillsCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
-                    const allSelectedSkillsRaw = [...selectedEfSkills, ...selectedBehSkills];
-                    
-                    console.log("DEBUG: Selected EF Skills:", selectedEfSkills);
-                    console.log("DEBUG: Selected Beh Skills:", selectedBehSkills);
+        displayResults(html) {
+            this.elements.results.innerHTML = html;
+            this.elements.resultsContainer.classList.remove('hidden');
+            this.elements.resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        },
 
-                    if (allSelectedSkillsRaw.length === 0) {
-                        if (errorMessageDiv) { errorMessageDiv.classList.remove('hidden'); } 
-                        else { alert("Please select at least one skill area."); }
-                        if (resultsContainer) resultsContainer.classList.add('hidden');
-                        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-                        if (progressBarContainer) progressBarContainer.classList.add('hidden');
-                        console.log("DEBUG: No skills selected. Aborting generation.");
-                        return;
-                    }
-                    
-                    let userNumWeeks = parseInt(numWeeksSelect.value);
-                    // Basic tier limiting for numWeeks
-                    const isPaidTier = false; // This would be determined by user authentication in a real app
-                    if (!isPaidTier && userNumWeeks > 2) {
-                        alert("Generating plans longer than 2 weeks is a premium feature. The plan will be generated for 2 weeks.");
-                        userNumWeeks = 2;
-                        numWeeksSelect.value = "2"; // Visually update the dropdown
-                    }
+        showError(message) {
+            this.elements.errorMessage.textContent = message;
+            this.elements.errorMessage.classList.remove('hidden');
+        },
+        
+        hideError() {
+            this.elements.errorMessage.classList.add('hidden');
+        },
+        
+        displayError(message) {
+            this.elements.results.innerHTML = `<p class="text-red-600 font-medium">${message}</p>`;
+            this.elements.resultsContainer.classList.remove('hidden');
+        }
+    },
 
+    // --- 6. CONTENT GENERATION ---
+    content: {
+        getRandomElement(arr) {
+            if (!arr || arr.length === 0) return "";
+            return arr[Math.floor(Math.random() * arr.length)];
+        },
 
-                    const userLessonsPerWeek = parseInt(lessonsPerWeekSelect.value);
-                    const primarySkill1 = primarySkill1Select.value;
-                    const primarySkill2 = primarySkill2Select.value;
-                    const primarySkills = [primarySkill1, primarySkill2].filter(Boolean);
-
-                    const studentInterestsRaw = studentInterestsInput.value.trim();
-                    const studentInterests = studentInterestsRaw ? studentInterestsRaw.split(',').map(interest => interest.trim().toLowerCase()).filter(interest => interest !== "") : [];
-
-                    const preferredModalitiesCheckboxes = document.querySelectorAll('input[name="teachingModalities"]:checked');
-                    const preferredModalities = Array.from(preferredModalitiesCheckboxes).map(cb => cb.value);
-                    
-                    console.log("DEBUG: Inputs gathered. Starting generation process...");
-
-                    if (errorMessageDiv) errorMessageDiv.classList.add('hidden');
-                    if (resultsContainer) resultsContainer.classList.add('hidden');
-                    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-                    if (progressBarContainer) {
-                        progressBarContainer.classList.remove('hidden');
-                        progressBar.style.width = '0%';
-                    }
-                    if (resultsDiv) resultsDiv.innerHTML = ''; 
-
-                    // Simulate progress for demo
-                    let currentProgress = 0;
-                    const progressInterval = setInterval(() => {
-                        currentProgress += 10;
-                        if (progressBar) progressBar.style.width = `${currentProgress}%`;
-                        if (currentProgress >= 100) {
-                            clearInterval(progressInterval);
-                        }
-                    }, 50); // Adjust timing as needed
-
-                    setTimeout(() => {
-                        clearInterval(progressInterval); // Ensure interval is cleared
-                        if (progressBar) progressBar.style.width = '100%';
-                        try {
-                            const unitPlan = generateUnitPlanContent(gradeLevel, selectedEfSkills, selectedBehSkills, userNumWeeks, userLessonsPerWeek, primarySkills, studentInterests, preferredModalities);
-                            if (resultsDiv) resultsDiv.innerHTML = unitPlan;
-                            if (loadingIndicator) loadingIndicator.classList.add('hidden');
-                            // progressBarContainer will be hidden after successful generation or error
-                            // if (progressBarContainer) progressBarContainer.classList.add('hidden'); 
-                            if (resultsContainer) {
-                                resultsContainer.classList.remove('hidden');
-                                resultsContainer.scrollIntoView({ behavior: 'smooth' });
-                            }
-                            console.log("DEBUG: Unit plan generation complete.");
-                        } catch (error) {
-                            console.error("DEBUG: Error during unit plan generation:", error.stack); 
-                            if (resultsDiv) resultsDiv.innerHTML = "<p class='text-red-500'>An error occurred generating the unit plan: " + error.message + ". Please check the browser console for more details.</p>";
-                            if (loadingIndicator) loadingIndicator.classList.add('hidden');
-                            if (progressBarContainer) progressBarContainer.classList.add('hidden');
-                            if (resultsContainer) resultsContainer.classList.remove('hidden');
-                        }
-                    }, 700); // Increased timeout slightly to allow progress bar to "complete"
-                });
-            } else { console.error("DEBUG: Generate button not found");}
-
-            // --- Main Content Generation Functions ---
-            function generateUnitPlanContent(gradeLevel, efSkills, behSkills, numWeeks, lessonsPerWeekCount, primarySkills, studentInterests, preferredModalities) {
-                console.log("DEBUG: generateUnitPlanContent function started.");
-                const allSelectedSkillsRaw = [...efSkills, ...behSkills];
-                let html = ``;
-                const primarySkillForTitle = primarySkills.length > 0 ? generateUniqueSkillName(primarySkills[0]) : (allSelectedSkillsRaw.length > 0 ? generateUniqueSkillName(allSelectedSkillsRaw[0]) : "Key");
-                let interestThemeTitleSegment = "";
-                if (studentInterests.length > 0) {
-                    const capitalizedInterests = studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1));
-                    interestThemeTitleSegment = ` with a Focus on ${capitalizedInterests.join(' & ')} Themes`;
-                }
-                html = `<h2 class="text-2xl font-bold text-sky-700 mb-3">Unit Title: Strengthening ${primarySkillForTitle} and Related SEL Skills${interestThemeTitleSegment} <span class="regenerate-section-btn" data-section-type="title" title="Regenerate Title (Conceptual)">&#x21BB;</span></h2>`;
-                html += `<p><strong>Grade Range:</strong> ${gradeLevel}</p>`;
-                html += `<p><strong>Focus Executive Functioning Skills:</strong> ${efSkills.length > 0 ? generateSkillList(efSkills) : "None selected"}</p>`;
-                html += `<p><strong>Focus Behavioral Skills:</strong> ${behSkills.length > 0 ? generateSkillList(behSkills) : "None selected"}</p>`;
-                if (primarySkills.length > 0) { html += `<p><strong>Primary Focus Skill(s):</strong> ${generateSkillList(primarySkills)}</p>`; }
-                if (studentInterests.length > 0) { html += `<p><strong>Student Interests Considered:</strong> ${studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ')}</p>`; }
-                if (preferredModalities.length > 0) { html += `<p><strong>Preferred Teaching Modalities Considered:</strong> ${preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()).join(', ')}</p>`; }
-                const allSelCompetenciesForUnit = [...new Set(allSelectedSkillsRaw.flatMap(skill => getAssociatedSECompetencies(skill)))];
-                html += `<p><strong>Associated SEL Competencies (CASEL):</strong> ${allSelCompetenciesForUnit.join(', ')}</p>`;
-                html += `<p><strong>Duration:</strong> ${numWeeks} weeks (${lessonsPerWeekCount} sessions per week, approx. 30 min each)</p>`;
-                const developmentalNoteForGrade = DEVELOPMENTAL_NOTES[gradeLevel] || "Ensure activities are developmentally appropriate for the selected grade range.";
-                html += `<p class="text-sm italic text-slate-500 mt-1"><strong>Developmental Note (${gradeLevel}):</strong> ${developmentalNoteForGrade}</p>`;
-                html += `<h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Unit Overview & Outcomes <span class="regenerate-section-btn" data-section-type="overview" title="Regenerate Overview (Conceptual)">&#x21BB;</span></h3>`;
-                const focusSkillsText = generateSkillList(allSelectedSkillsRaw);
-                const overviewInterestsText = studentInterests.length > 0 ? studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(', ') : 'various engaging themes';
-                html += `<p>This ${numWeeks}-week unit focuses on developing students' ${focusSkillsText}. Executive functioning and behavioral skills are crucial for academic success, social-emotional well-being, and effective self-regulation. This unit aims to enhance these abilities through targeted activities that are engaging, developmentally appropriate for students in ${gradeLevel}, and incorporates student interests like ${overviewInterestsText}. ${primarySkills.length > 0 ? `Special emphasis will be placed on ${generateSkillList(primarySkills)}.` : ''} Each session implicitly follows a gradual release model (I Do, We Do, You Do) to support learning.</p>`;
-                html += `<p><strong>Key Outcomes:</strong> By the end of this unit, students will be better able to:</p> <ul class="list-disc list-inside pl-4 text-sm">`;
-                allSelectedSkillsRaw.forEach(skill => {
-                     html += `<li>${getBloomVerbs(gradeLevel)} strategies for ${generateUniqueSkillName(skill).toLowerCase()} in classroom and social settings.</li>`;
-                });
-                html += `<li>${getBloomVerbs(gradeLevel === "4-6" ? "evaluate" : "apply")} the importance of ${focusSkillsText.toLowerCase()} in daily life, including how they relate to their interests.</li>`;
-                html += `<li>Demonstrate growth in associated Social-Emotional Learning (SEL) competencies such as ${allSelCompetenciesForUnit.join(', ').toLowerCase()}.</li>`;
-                html += `<li>Reflect on their own skill development and identify areas for continued practice.</li> </ul>`;
-                
-                let availableSkillsForRotation = [...allSelectedSkillsRaw];
-                if (primarySkills.length > 0) { availableSkillsForRotation = [...primarySkills, ...allSelectedSkillsRaw.filter(s => !primarySkills.includes(s))]; }
-                
-                for (let i = 1; i <= numWeeks; i++) { 
-                    html += `<div class="mt-6 pt-4 border-t border-slate-300 page-break">`; 
-                    let weeklyThemeSkillsRaw = [];
-                    if (availableSkillsForRotation.length > 0) {
-                        weeklyThemeSkillsRaw.push(availableSkillsForRotation[ ( (i-1) * 2 ) % availableSkillsForRotation.length]);
-                        if (availableSkillsForRotation.length > 1 && weeklyThemeSkillsRaw.length < 2) {
-                            let secondSkillCandidate = availableSkillsForRotation[ ( (i-1) * 2 + 1) % availableSkillsForRotation.length];
-                            if (secondSkillCandidate !== weeklyThemeSkillsRaw[0]) { weeklyThemeSkillsRaw.push(secondSkillCandidate); } 
-                            else if (availableSkillsForRotation.length > 2 && availableSkillsForRotation.length > weeklyThemeSkillsRaw.length) { weeklyThemeSkillsRaw.push(availableSkillsForRotation[ ( (i-1) * 2 + 2) % availableSkillsForRotation.length]); }
-                        }
-                    }
-                    if (weeklyThemeSkillsRaw.length === 0 && allSelectedSkillsRaw.length > 0) weeklyThemeSkillsRaw.push(allSelectedSkillsRaw[0]); 
-                    weeklyThemeSkillsRaw = [...new Set(weeklyThemeSkillsRaw)]; 
-                    const weeklyThemeSkillsText = generateSkillList(weeklyThemeSkillsRaw);
-                    html += `<h4 class="text-lg font-semibold text-sky-600 mb-1">Week ${i}: Focusing on ${weeklyThemeSkillsText} <span class="regenerate-section-btn" data-section-type="week-theme" data-week="${i}" title="Regenerate Week Theme (Conceptual)">&#x21BB;</span></h4>`;
-                    let weeklyInterest = studentInterests.length > 0 ? studentInterests[(i-1) % studentInterests.length] : "engaging topics";
-                    html += `<p class="italic text-sm text-slate-600 mb-3">This week, activities will center on understanding and practicing ${weeklyThemeSkillsText.toLowerCase()}, linking them to relevant classroom situations, SEL growth, and possibly themes related to ${weeklyInterest}.</p>`;
-                    for (let j = 1; j <= lessonsPerWeekCount; j++) { 
-                        let lessonFocusSkillRaw = "";
-                        if (weeklyThemeSkillsRaw.length > 0) { lessonFocusSkillRaw = weeklyThemeSkillsRaw[(j-1) % weeklyThemeSkillsRaw.length]; } 
-                        else if (allSelectedSkillsRaw.length > 0) { lessonFocusSkillRaw = allSelectedSkillsRaw[( (i-1) * lessonsPerWeekCount + (j-1) ) % allSelectedSkillsRaw.length]; }
-                        if (!lessonFocusSkillRaw && allSelectedSkillsRaw.length > 0) lessonFocusSkillRaw = allSelectedSkillsRaw[0]; 
-                        if (!lessonFocusSkillRaw) lessonFocusSkillRaw = "a key skill";
-                        html += generateSessionContent(lessonFocusSkillRaw, gradeLevel, i, j, allSelectedSkillsRaw, studentInterests, preferredModalities);
-                    }
-                    html += `</div>`;
-                }
-                html += `<div class="mt-8 pt-6 border-t border-slate-300 page-break"><h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">General Integration Ideas (Throughout the Unit) <span class="regenerate-section-btn" data-section-type="integration" title="Regenerate Integration Ideas (Conceptual)">&#x21BB;</span></h3>${generateIntegrationIdeas(allSelectedSkillsRaw, gradeLevel, studentInterests)}</div>`;
-                html += `<div class="mt-8 pt-6 border-t border-slate-300"><h3 class="text-xl font-semibold text-sky-600 mt-4 mb-2">Progress Monitoring & Assessment Ideas <span class="regenerate-section-btn" data-section-type="assessment" title="Regenerate Assessment Ideas (Conceptual)">&#x21BB;</span></h3>${generateProgressMonitoringTips(allSelectedSkillsRaw, gradeLevel, studentInterests)}</div>`;
-                return html;
+        getBloomVerbs(gradeLevel = "K-1") {
+            const verbs = UnitPlanGenerator.config.bloomVerbs;
+            switch (gradeLevel) {
+                case "K-1": return this.getRandomElement(verbs.remember.concat(verbs.understand));
+                case "2-3": return this.getRandomElement(verbs.understand.concat(verbs.apply));
+                case "4-6": return this.getRandomElement(verbs.apply.concat(verbs.analyze, verbs.evaluate));
+                default: return this.getRandomElement(verbs.remember);
             }
+        },
 
-            function generateSessionContent(rawSkill, gradeLevel, weekNum, lessonNum, allSelectedSkillsRaw, studentInterests, preferredModalities) { 
-                const skillName = generateUniqueSkillName(rawSkill);
-                const selCompetencies = getAssociatedSECompetencies(rawSkill);
-                let sessionHtml = `<div class="ml-0 md:ml-4 mt-4 p-4 bg-white rounded shadow-md border border-slate-200">`;
-                sessionHtml += `<h5 class="text-md font-semibold text-slate-800 mb-2">Week ${weekNum}, Session ${lessonNum} - Focus Skill: ${skillName} <span class="regenerate-section-btn" data-section-type="session" data-week="${weekNum}" data-session="${lessonNum}" title="Regenerate Full Session (Conceptual)">&#x21BB;</span></h5>`;
-                const interestsForObjective = studentInterests.length > 0 ? getRandomElement(studentInterests) : 'everyday tasks';
-                const capInterestForObjective = interestsForObjective.charAt(0).toUpperCase() + interestsForObjective.slice(1);
-                const modalitiesForObjective = preferredModalities.length > 0 ? preferredModalities.map(m => m.replace(/([A-Z0-9])/g, ' $1').toLowerCase().trim()).join(' or ') : 'varied';
-                
-                sessionHtml += `<h6>Learning Objectives:</h6><ul class="list-disc list-inside pl-4 text-sm"><li>Students will be able to ${getBloomVerbs(gradeLevel).toLowerCase()} ${skillName.toLowerCase()} and identify one way it is used, possibly in relation to ${capInterestForObjective}.</li><li>Students will practice ${selCompetencies[0].toLowerCase()} by engaging in the session activities, potentially using ${modalitiesForObjective} learning approaches.</li></ul>`;
-                const materials = getMaterials(rawSkill, gradeLevel, preferredModalities);
-                sessionHtml += `<h6>Materials Needed: <span class="regenerate-section-btn" data-section-type="materials" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Materials (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${materials.join(', ') || "Basic classroom supplies."}</p>`;
-                sessionHtml += `<h6>Warm-Up (Approx. 5 minutes): <span class="regenerate-section-btn" data-section-type="warmup" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Warm-up (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${getWarmUp(rawSkill, gradeLevel, weekNum, lessonNum, studentInterests, preferredModalities)}</p>`;
-                sessionHtml += `<h6>Mini-Lesson & Discussion (Approx. 5-7 minutes - "I Do"): <span class="regenerate-section-btn" data-section-type="minilesson" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Mini-Lesson (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${getMiniLesson(rawSkill, gradeLevel, selCompetencies, studentInterests)}</p>`;
-                const coreActivity = getCoreActivity(rawSkill, gradeLevel, selCompetencies, allSelectedSkillsRaw, studentInterests, preferredModalities);
-                sessionHtml += `<h6>Core Activity: ${coreActivity.title} (Approx. 15-20 minutes - "We Do / You Do with Support") <span class="regenerate-section-btn" data-section-type="coreactivity" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Core Activity (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${coreActivity.description}</p><ol class="list-decimal list-inside pl-4 text-sm space-y-1">`;
-                coreActivity.steps.forEach(step => { sessionHtml += `<li>${step}</li>`;});
-                sessionHtml += `</ol>`;
-                if (coreActivity.differentiation) { sessionHtml += `<p class="text-xs italic mt-1">Differentiation (UDL Ideas): ${coreActivity.differentiation}</p>`; }
-                sessionHtml += `<h6>Wrap-up & Reflection (Approx. 5 minutes - "Check/Act"): <span class="regenerate-section-btn" data-section-type="reflection" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Reflection (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${getReflection(rawSkill, gradeLevel, selCompetencies, studentInterests, preferredModalities)}</p>`;
-                const closing = getClosing(rawSkill, gradeLevel, studentInterests);
-                if (closing) { sessionHtml += `<h6>Closing & Home Connection Idea (Optional, 1-2 minutes): <span class="regenerate-section-btn" data-section-type="closing" data-skill="${rawSkill}" data-grade="${gradeLevel}" title="Regenerate Closing (Conceptual)">&#x21BB;</span></h6><p class="text-sm">${closing}</p>`;}
-                const teacherTip = getTeacherTip(rawSkill, gradeLevel, preferredModalities, allSelectedSkillsRaw, studentInterests); 
-                if (teacherTip) { sessionHtml += `<p class="text-xs italic mt-2 p-2 bg-sky-50 rounded"><strong>Teacher Tip:</strong> ${teacherTip}</p>`;}
-                sessionHtml += `</div>`;
-                return sessionHtml;
-            }
-            
-            function getMaterials(skill, gradeLevel, preferredModalities = []) {
-                let materials = ["Whiteboard or chart paper", "Markers or pens", "Paper", "Pencils or crayons", "Student journals/notebooks (for 2-3, 4-6)"];
-                if (skill.includes("Time Management") || skill.includes("Planning")) materials.push("Timer (visual for K-2, digital for 4-6)", "Sample checklists or graphic organizers (varied complexity)");
-                if (skill.includes("Emotional Regulation")) materials.push("Feeling faces chart/cards (diverse representations)", "Breathing exercise visual (e.g., 'starfish breathing', 'box breathing')", "Role-play scenario cards (age-appropriate)", "Optional: Calm down kit items (e.g., stress ball, fidget toy - introduce carefully)");
-                if (skill.includes("Working Memory")) materials.push("Picture cards (for matching, sequencing)", "Small objects for memory games (e.g., counters, blocks)", "List of multi-step directions (oral and written for older grades)", "Story cards for retelling");
-                if (gradeLevel === "4-6" && (skill.includes("Organization") || skill.includes("Self-Monitoring"))) materials.push("Highlighters", "Sticky notes", "Example planner pages");
-                if (skill.includes("Cognitive Flexibility")) materials.push("Problem-solving scenario cards", "Building materials (e.g. blocks, LEGOs, craft supplies)", "Alternate ending story prompts");
-                if (skill.includes("Social Skills") || skill.includes("Communication")) materials.push("Puppets (for K-1)", "Social story examples", "Conversation starter cards");
+        getAssociatedSECompetencies(skill) {
+            return UnitPlanGenerator.config.caselCompetenciesMap[skill] || ["Self-Management"];
+        },
+        
+        getUniqueSkillName(skill) {
+             if (!skill) return "";
+             let displayName = skill;
+             if (skill.includes("(EF)")) displayName = skill.replace(" (EF)", " (Executive Functioning)");
+             else if (skill.includes("(BS)")) displayName = skill.replace(" (BS)", " (Behavioral)");
+             return displayName;
+        },
 
-                if (preferredModalities.includes('artsCrafts')) { materials.push("Art supplies (colored paper, scissors, glue, play-doh, yarn, paint sticks)"); }
-                if (preferredModalities.includes('techIntegration')) { materials.push("Access to tablets or computers (if applicable and available, e.g., for interactive EF games, digital graphic organizers, online timers)"); }
-                if (preferredModalities.includes('storytellingDrama')) { materials.push("Simple props or costumes (optional, e.g., hats, scarves, character masks)");}
-                if (preferredModalities.includes('gameBased')) { materials.push("Board game examples (simple for K-1, more complex for 4-6)", "Card decks (for sorting, memory)");}
-                return [...new Set(materials)]; // Ensure no duplicates
-            }
+        generateSkillList(skillsRaw) {
+            const skills = [...new Set(skillsRaw.map(s => this.getUniqueSkillName(s)).filter(Boolean))];
+            if (skills.length === 0) return "selected focus areas";
+            if (skills.length === 1) return skills[0];
+            if (skills.length === 2) return skills.join(' and ');
+            return skills.slice(0, -1).join(', ') + ', and ' + skills.slice(-1);
+        },
+        
+        getMaterials(skill, gradeLevel, preferredModalities = []) {
+            let materials = ["Whiteboard or chart paper", "Markers", "Paper", "Pencils or crayons"];
+            if (gradeLevel !== "K-1") materials.push("Student journals/notebooks");
+            if (skill.includes("Time") || skill.includes("Planning")) materials.push("Timer", "Sample checklists");
+            if (skill.includes("Emotional")) materials.push("Feeling faces chart", "Role-play cards");
+            if (skill.includes("Memory")) materials.push("Picture cards", "Small objects for games");
+            if (preferredModalities.includes('artsCrafts')) materials.push("Art supplies (scissors, glue, etc.)");
+            return [...new Set(materials)];
+        },
 
-            function getWarmUp(skill, gradeLevel, weekNum, lessonNum, studentInterests = [], preferredModalities = []) {
-                const skillName = generateUniqueSkillName(skill);
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "a fun topic";
-                let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
-                const warmups = [
-                    `Quick Review: "Last session, we talked about [concept from previous lesson, e.g., 'using our 'detective eyes' for Self-Monitoring']. Who can share one time they used it, perhaps when thinking about ${capRandomInterest}?"`,
-                    `Mindful Moment: Lead a 1-minute 'Sensory Check-in' (e.g., "Notice 3 things you can see, 2 you can hear, 1 you can feel right now") or 'Belly Breathing with a ${capRandomInterest} plush toy'. (SEL: Self-Awareness/Self-Management).`,
-                    `Brain Teaser: A quick ${capRandomInterest}-themed 'Spot the Difference' picture or a simple logic puzzle. (EF: Attention/Working Memory).`,
-                    `"Feelings Thermometer": Students point to a visual thermometer (e.g., cool blue to hot red) to show their energy/feeling level. (SEL: Self-Awareness).`,
-                    `"Skill Chant": Create a short, memorable chant for ${skillName.toLowerCase()}. E.g., For Planning: "Think it, Plan it, Do it, Check it!" with simple actions.`
-                ];
-                if (gradeLevel === "K-1") { 
-                    warmups.push(`Sing a short, active song like "If You're Happy and You Know It" but adapt lyrics: "If you're ready for ${skillName.toLowerCase()}, clap your hands!" or "The ${capRandomInterest} Freeze Dance" (EF: Inhibition).`);
-                    warmups.push(`"What's Missing?": Show 3-4 ${capRandomInterest}-related items, cover them, remove one. Students guess what's missing. (EF: Working Memory)`);
-                } else if (gradeLevel === "2-3") { 
-                    warmups.push(`"One-Word Goal": Students share one word that is their goal for using ${skillName.toLowerCase()} today, or one word about how ${capRandomInterest} makes them feel focused.`);
-                    warmups.push(`"Quick Draw": Students quickly sketch something that helps them focus or a character from a ${capRandomInterest} story who used good planning.`);
-                } else { // 4-6
-                    warmups.push(`"Scenario Snippet": Present a very brief scenario: "Imagine you have a big ${capRandomInterest} project due tomorrow and you haven't started. What's the VERY first thing you'd do using ${skillName.toLowerCase()}?" (Quick share).`);
-                    warmups.push(`"Mental Checklist": "Quietly, think of 3 things you need to do to be ready for today's ${skillName} lesson about ${capRandomInterest}." (EF: Planning, Initiation).`);
-                }
-                if (preferredModalities.includes('movementKinesthetic')) { warmups.unshift(`Active Start: A quick "Skill Charades" - act out a way to use ${skillName.toLowerCase()} when dealing with ${capRandomInterest}, or "Cross-Lateral Brain Boosters" (e.g., touching opposite hand to knee). Helps with ${skillName} by preparing the brain and body.`);}
-                if (preferredModalities.includes('gameBased') && gradeLevel !== "K-1") { warmups.push(`"Two Truths and a Strategy": Teacher (or student) shares two true facts about ${capRandomInterest} and one strategy for ${skillName.toLowerCase()}. Class identifies the strategy.`);}
-                return getRandomElement(warmups);
-            }
+        getWarmUp(skill, gradeLevel, studentInterests = []) {
+            const skillName = this.getUniqueSkillName(skill);
+            let interest = this.getRandomElement(studentInterests) || "a fun topic";
+            const warmups = [
+                `Mindful Moment: Lead a 1-minute 'Belly Breathing' exercise, perhaps imagining a ${interest} rising and falling.`,
+                `Quick Review: "Last time we talked about... Who can share one time they used that skill, maybe when thinking about ${interest}?"`,
+                `Skill Chant: Create a short chant for ${skillName}, e.g., "Think it, Plan it, Do it, Check it!" with actions.`
+            ];
+            return this.getRandomElement(warmups);
+        },
 
-            function getMiniLesson(skill, gradeLevel, selCompetencies, studentInterests = []) {
-                const skillName = generateUniqueSkillName(skill);
-                const selText = selCompetencies.join(' and ').toLowerCase();
-                let interestExample = "";
-                let randomInterest = "";
-                if (studentInterests && studentInterests.length > 0) {
-                    randomInterest = getRandomElement(studentInterests);
-                    let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
-                    const interestExamples = [
-                        `For instance, if you love ${capRandomInterest}, using good ${skillName.toLowerCase()} can help you remember cool facts for a ${capRandomInterest} quiz, build an amazing ${capRandomInterest} LEGO model, or share your ${capRandomInterest} game ideas clearly with a friend!`,
-                        `Imagine you're creating a ${capRandomInterest} comic strip. Strong ${skillName.toLowerCase()} helps you plan the story, stick to the task, and make sure your characters' actions make sense.`,
-                        `When learning a new dance move for a ${capRandomInterest}-themed performance, ${skillName.toLowerCase()} helps you remember the steps and control your body.`
-                    ];
-                    interestExample = getRandomElement(interestExamples);
-                }
-                const definition = SKILL_DEFINITIONS[skill] || `our ability to effectively manage our actions and thoughts for this skill`;
-                let intro = `Today we're activating our **${skillName}** superpowers! ${skillName} is all about ${definition.toLowerCase()} This is a key skill because it helps us learn new things, solve problems, and work well with others, especially when we're excited about ${randomInterest || "our school subjects"}. Strengthening our ${skillName.toLowerCase()} also boosts our SEL skills like ${selText}.${interestExample}`;
-                
-                let exampleOrStrategy = "";
-                let capRandomInterestForExample = randomInterest ? randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1) : "something cool";
-                
-                if (gradeLevel === "K-1") { 
-                    let K1_interest_ex = [
-                        `remembering the sequence of a ${capRandomInterestForExample} song`,
-                        `waiting your turn to add a block to the ${capRandomInterestForExample} tower`,
-                        `listening to all the instructions before starting your ${capRandomInterestForExample} drawing`
-                    ].join(' or ');
-                    exampleOrStrategy = `Think about ${K1_interest_ex}. That's using our ${skillName.toLowerCase()}! A simple way to practice is using "listening ears," "quiet hands," and "waiting feet." (Teacher models these actions). Let's try one now!`; 
-                } else if (gradeLevel === "2-3") { 
-                    let G23_interest_ex = [
-                        `planning the steps for a ${capRandomInterestForExample} science experiment`, 
-                        `stopping yourself from shouting out an answer during a ${capRandomInterestForExample} trivia game`,
-                        `changing your idea if your first ${capRandomInterestForExample} drawing doesn't look right`
-                    ].join(' or ');
-                    exampleOrStrategy = `Imagine ${G23_interest_ex}. You need ${skillName.toLowerCase()} to think through the steps, control your impulses, or adapt your approach. A helpful strategy is "Stop, Think, Plan" or using a "Brain Break" if you feel stuck. (Teacher briefly explains one).`;
-                } else { // 4-6
-                    let G46_interest_ex = [
-                        `organizing your research notes for a presentation about ${capRandomInterestForExample}`, 
-                        `managing your time to complete all parts of a ${capRandomInterestForExample}-themed group project`, 
-                        `evaluating different solutions to a complex problem in a ${capRandomInterestForExample} design challenge`
-                    ].join(' or ');
-                    exampleOrStrategy = `Consider ${G46_interest_ex}. Strong ${skillName.toLowerCase()} skills help you break down big tasks, use tools like digital planners or graphic organizers, and reflect on your progress. We can use strategies like "Goal-Setting with Mini-Goals" or "Self-Correction Checkpoints." (Teacher briefly explains one). How does using ${skillName.toLowerCase()} effectively contribute to being a responsible and successful learner (SEL)?`;
-                }
-                return `${intro} ${exampleOrStrategy} Let's brainstorm: When was a time this week you noticed someone (or yourself) using ${skillName.toLowerCase()} well, maybe related to ${randomInterest || "school work"}? How did it help? (Think-Pair-Share)`;
-            }
-            
-            function getCoreActivity(skill, gradeLevel, selCompetencies, allSelectedSkillsRaw, studentInterests = [], preferredModalities = []) {
-                const skillName = generateUniqueSkillName(skill);
-                const selText = selCompetencies[0].toLowerCase();
-                let activity = { title: `Strengthening Our ${skillName}`, description: `Let's dive into an activity to actively build our ${skillName.toLowerCase()} and practice ${selText} (SEL).`, steps: ["Follow teacher's instructions.", "Participate respectfully.", "Reflect on your experience."], differentiation: "Adjust complexity based on student responses. Provide sentence starters or visual aids for students who need them." };
-                let interestFlavor = studentInterests.length > 0 ? getRandomElement(studentInterests) : "";
-                let interestPrefix = interestFlavor ? `${interestFlavor.charAt(0).toUpperCase() + interestFlavor.slice(1)}-Themed ` : "";
-                let devNote = DEVELOPMENTAL_NOTES[gradeLevel] ? `(${DEVELOPMENTAL_NOTES[gradeLevel].split('.')[0]})` : "";
+        getMiniLesson(skill, gradeLevel, selCompetencies, studentInterests = []) {
+            const skillName = this.getUniqueSkillName(skill);
+            let interest = this.getRandomElement(studentInterests) || "school subjects";
+            const definition = UnitPlanGenerator.config.skillDefinitions[skill] || "our ability to manage our thoughts and actions.";
+            return `Today we're activating our **${skillName}** superpowers! This is about ${definition.toLowerCase()}. It helps us learn new things, like cool facts about ${interest}. Let's discuss when this skill is useful...`;
+        },
 
-                let chosenActivityType = "";
-                const activityTypePreferences = { /* As before */
-                    "Working Memory": "Game", "Inhibition (Impulse Control)": "Game", "Cognitive Flexibility": "Problem-Solving Task", 
-                    "Planning and Organization": "Strategy Instruction", "Emotional Regulation (EF)": "Role-Play", "Initiation": "Strategy Instruction", 
-                    "Self-Monitoring (EF)": "Strategy Instruction", "Time Management": "Strategy Instruction", "Social Skills": "Role-Play", 
-                    "Emotional Regulation (BS)": "Role-Play", "Self-Monitoring (BS)": "Scenario Analysis", "Impulse Control (BS)": "Game", 
-                    "Adaptive Behavior": "Hands-On Task/Project Intro", "Communication Skills": "Role-Play", "Conflict Resolution": "Role-Play", 
-                    "Attention and Focus": "Game"
-                };
-                chosenActivityType = activityTypePreferences[skill] || "Hands-On Task/Project Intro";
+        getCoreActivity(skill, gradeLevel, studentInterests = []) {
+            const skillName = this.getUniqueSkillName(skill);
+            let interest = this.getRandomElement(studentInterests) || "a fun project";
+            let activity = {
+                title: `Strengthening Our ${skillName}`,
+                description: `Let's dive into an activity to build our ${skillName.toLowerCase()}.`,
+                steps: ["Follow teacher's instructions.", "Participate respectfully.", "Reflect on your experience."],
+                differentiation: "Adjust complexity based on student responses. Provide sentence starters or visual aids."
+            };
 
-                if (preferredModalities.includes('gameBased') && (chosenActivityType === "Game" || skill.includes("Memory") || skill.includes("Attention") || skill.includes("Impulse"))) chosenActivityType = "Game";
-                else if (preferredModalities.includes('storytellingDrama') && (chosenActivityType === "Role-Play" || skill.includes("Social") || skill.includes("Communication") || skill.includes("Emotion"))) chosenActivityType = "Role-Play";
-                else if (preferredModalities.includes('artsCrafts') && !preferredModalities.includes('gameBased')) chosenActivityType = "Hands-On Task/Project Intro"; // Prioritize game if both selected
-                else if (preferredModalities.includes('movementKinesthetic')) chosenActivityType = "MovementActivity";
-                else if (preferredModalities.includes('discussionOriented') && (gradeLevel === '4-6' || gradeLevel === '2-3')) chosenActivityType = "Case Study/Problem-Solving";
-
-
-                // --- Start of More Varied Activity Content ---
-                if (skill.includes("Planning and Organization")) {
-                    // ... (Keep existing excellent structure for Planning/Organization, maybe add one more variation or interest tie-in) ...
-                    // For brevity, I'll assume the existing Planning/Org activity structure is good and focus on adding new distinct ones
-                     activity.title = `${interestPrefix}Master Planners: Charting Our Course for ${skillName}`;
-                    activity.description = `Effective ${skillName.toLowerCase()} is like drawing a map for a ${interestFlavor || "journey"}! It helps us reach our goals, whether it's completing ${interestFlavor || "school work"} or designing a cool ${interestFlavor || "invention"}. (SEL: ${selText}). ${devNote}`;
-                    if (gradeLevel === "K-1") { 
-                        activity.steps = [
-                            `"My ${interestFlavor || "Art"} Sequence": Teacher presents a 3-step visual sequence for a simple ${interestFlavor || "art"} task (e.g., 1. Color the ${interestFlavor || "animal"}. 2. Cut it out. 3. Glue it on paper).`,
-                            "Students point to each step on their own mini-visual as the teacher calls it out.",
-                            `"What's Next? Game": Teacher does one step, asks "What's next in our plan?" Students identify the next visual step.`,
-                            `Complete the task following the visual plan. Praise focusing on following the plan: 'You're great planners!'`
-                        ];
-                        activity.differentiation = `Focus on 2 steps for some. Use hand-over-hand guidance for pointing. Provide pre-cut shapes if cutting is a barrier. UDL: Offer choice of coloring tool.`;
-                    } else if (gradeLevel === "2-3") { 
-                        activity.steps = [
-                            `"${interestPrefix}Story Retell Plan": After a short story (maybe about ${interestFlavor}), task: 'Plan 3-4 key events to retell the story in order.'`,
-                            "Students use a 'First, Next, Then, Finally' graphic organizer (or a comic strip template with 4 panels) to jot down or draw their key events.",
-                            `In pairs, students share their plans. "Does your partner's plan make sense? Did they miss a big event from the ${interestFlavor || "story"}?"`,
-                            `One pair shares their plan with the class. Discuss: "How did making this plan help us remember the ${interestFlavor || "story"}?"`
-                        ];
-                        activity.differentiation = `Provide sentence starters (e.g., "First, the ${interestFlavor || "character"}..."). Offer a story map with some events pre-filled. Allow oral planning for those who struggle with writing. UDL: Choice of drawing or writing.`;
-                    } else { // 4-6
-                        activity.steps = [
-                            `"The ${interestPrefix}Project Proposal": Task: 'Individually or in pairs, plan a mini-research project or a creative presentation about a ${interestFlavor || "topic of interest"}. Your plan must include: 1. Project Goal, 2. Key Information to find/include, 3. At least 3 steps to complete it, 4. Materials needed, 5. A simple timeline (e.g., Day 1: Research, Day 2: Draft, Day 3: Finalize).'`,
-                            "Students use a structured planning template (digital or paper). Encourage breaking down larger steps.",
-                            `"Peer Review a Plan": Students swap plans with another student/pair and provide feedback using a checklist: Is the goal clear? Are steps logical? Are materials listed? Is the timeline realistic? (Focus on constructive feedback).`,
-                            `Discuss: "What makes a plan effective? How can we adjust our plan if we run into a problem (Cognitive Flexibility connection)?"`
-                        ];
-                        activity.differentiation = `Provide example project proposals. Offer choice of planning templates (e.g., mind map, linear list, digital tool). For pairs, assign roles (e.g., taskmaster, materials manager). UDL: Allow presentation of plan in various formats (oral, written, visual).`;
-                    }
-                } else if (skill.includes("Working Memory")) {
-                    activity.title = `${interestPrefix}Memory Wizards: Holding Info in Mind for ${skillName}`;
-                    activity.description = `Our ${skillName.toLowerCase()} is like a mental sticky note! It helps us remember instructions, facts about ${interestFlavor || "topics"}, and steps in a game. (SEL: ${selText}). ${devNote}`;
-                    if (gradeLevel === "K-1") {
-                        activity.steps = [
-                            `"${interestPrefix}Sound Story": Teacher tells a very short story with 2-3 distinct sounds (e.g., "The ${interestFlavor || "cat"} (meow) saw a ${interestFlavor || "dog"} (woof) chase a ${interestFlavor || "ball"} (boing!)").`,
-                            "Students repeat the sounds in order after the story.",
-                            `"What Did I Say?": Teacher gives a 2-step instruction related to ${interestFlavor || "classroom objects"} (e.g., "Touch your nose, then clap your hands." or "Get a red crayon and a blue paper."). Students perform the actions.`,
-                            `Discuss: "What helped your brain remember the sounds/steps?" (e.g., saying it quietly, making a picture in my head).`
-                        ];
-                        activity.differentiation = `Start with 1-2 sounds/steps. Use visual cues alongside verbal instructions. Allow choral response for sound story. UDL: Incorporate actions with sounds.`;
-                    } else if (gradeLevel === "2-3") {
-                        activity.steps = [
-                            `"${interestPrefix}Memory Chain": Start with a phrase (e.g., "For our ${interestFlavor || "picnic"}, I'm bringing apples."). Next student repeats and adds an item ("...apples and bananas."). Continue, increasing chain length.`,
-                            `"Visual Instruction Relay": Show a picture with 3-4 simple details (e.g., a ${interestFlavor || "robot"} with a red button, blue legs, and holding a star). Students have 10 seconds to look. Then, they try to draw it from memory or list the details.`,
-                            `Pairs compare their drawings/lists. "What strategies did you use to remember the ${interestFlavor || "robot"} details?"`,
-                            `Discuss: "How does practicing remembering help us with multi-step tasks like a ${interestFlavor || "science experiment"}?"`
-                        ];
-                        activity.differentiation = `Keep memory chain shorter for some. Allow students to jot down one key word during relay. Provide a partially drawn robot. UDL: Choice of drawing or listing details.`;
-                    } else { // 4-6
-                        activity.steps = [
-                            `"${interestPrefix}Fact Scramble & Recall": Teacher presents 4-5 jumbled facts about a ${interestFlavor || "historical event or scientific concept"} on the board. Students have 1 minute to mentally unscramble and remember them.`,
-                            "Board is cleared. Students write down as many facts as they can recall, in the correct order or context.",
-                            `"Expert Share-out": Students volunteer to share one fact they recalled. Class collaboratively reconstructs the full set of information.`,
-                            `Discuss: "What techniques did you use to organize and recall the ${interestFlavor || "facts"}? (e.g., chunking, visualization, self-rehearsal). How is this skill useful for studying or following complex game rules?"`
-                        ];
-                        activity.differentiation = `Provide fewer facts. Allow students to make very quick, discreet notes. Give a keyword list as a scaffold for recall. UDL: Allow students to record facts orally if writing is a barrier.`;
-                    }
-                } else if (skill.includes("Cognitive Flexibility")) {
-                    activity.title = `${interestPrefix}Flexible Thinkers: Adapting to Change with ${skillName}`;
-                    activity.description = `Being a ${skillName.toLowerCase()} means we can switch gears, see things in new ways, and solve problems when plans change – like when our favorite ${interestFlavor || "game"} has a new rule! (SEL: ${selText}, Responsible Decision-Making). ${devNote}`;
-                     if (gradeLevel === "K-1") {
-                        activity.steps = [
-                            `"Silly ${interestFlavor || "Animal"} Sort": Provide pictures of ${interestFlavor || "animals"}. First, sort by one rule (e.g., "Put all the animals that fly here").`,
-                            `"Switcheroo!": Teacher says "Switcheroo! Now sort by a new rule: Put all the animals that are blue here." (even if a flying animal is blue).`,
-                            `Repeat with another simple rule change (e.g., "has stripes," "lives in water").`,
-                            `Discuss: "Was it tricky to change your thinking? Our brains are like superheroes that can switch rules!"`
-                        ];
-                        activity.differentiation = `Use fewer items and very distinct categories. Model the sorting for the new rule each time. UDL: Allow students to sort into labeled hoops or containers.`;
-                    } else if (gradeLevel === "2-3") {
-                        activity.steps = [
-                            `"${interestPrefix}Story Twist": Read a familiar short story or a scenario about ${interestFlavor || "friends playing"}. Pause at a key moment.`,
-                            `"What if...?" Brainstorm: "What if [a character made a different choice / an unexpected thing happened, e.g., the ${interestFlavor || "ball"} went over the fence]?" Generate 2-3 alternative outcomes.`,
-                            `In pairs, students choose one "What if..." and draw or write a new ending for the ${interestFlavor || "story"}.`,
-                            `Share new endings. Discuss: "How did changing one thing make the ${interestFlavor || "story"} different? How is this like real life when things don't go as planned?"`
-                        ];
-                        activity.differentiation = `Provide sentence starters for new endings. Offer pre-drawn comic panels for students to fill in. UDL: Choice of drawing, writing, or acting out the new ending with a partner.`;
-                    } else { // 4-6
-                        activity.steps = [
-                            `"${interestPrefix}Re-Design Challenge": Present a common object or a simple ${interestFlavor || "game"}. Task: "Imagine this object/game is now for a completely different purpose or audience (e.g., a pencil is now a tool for an astronaut on Mars; a simple tag game is now for players who can't run). How would you redesign it?"`,
-                            "Students brainstorm and sketch/list at least 3 changes they would make and why.",
-                            `"Innovation Pitch": Students briefly share their redesigned ${interestFlavor || "object/game"} and explain their reasoning for the changes.`,
-                            `Discuss: "What old ideas did you have to let go of? What new perspectives did you consider? How does this 'flexible thinking' help in problem-solving or innovation, especially when working on complex ${interestFlavor || "projects"}?"`
-                        ];
-                        activity.differentiation = `Provide specific prompts for redesign (e.g., "Make it waterproof," "Make it silent"). Offer a template for listing changes and reasons. UDL: Allow students to build a model of their redesign with simple materials.`;
-                    }
-                } else if (skill.includes("Emotional Regulation (BS)") || skill.includes("Emotional Regulation (EF)")) {
-                     activity.title = `${interestPrefix}Cool Commanders: Managing Our Feelings Like a Pro`;
-                     activity.description = `We all have big feelings! Today we'll practice how to understand and handle them in helpful ways, especially when things feel tricky, like during a tough ${interestFlavor || "assignment"} or when our ${interestFlavor || "favorite character"} is in trouble. (SEL: ${selText}). ${devNote}`;
-                     let commonTriggers = gradeLevel === "K-1" ? `when a ${interestFlavor || "toy"} is taken or it's time to stop playing a ${interestFlavor || "game"}` : 
-                                        gradeLevel === "2-3" ? `when we make a mistake on our ${interestFlavor || "drawing"} or have a disagreement about ${interestFlavor || "game"} rules with a friend` :
-                                        `when facing a challenging ${interestFlavor || "academic task"}, peer conflicts during a ${interestFlavor || "group project"}, or feeling overwhelmed by unexpected changes to a ${interestFlavor || "plan"}.`;
-                    activity.steps = [
-                        `"Feeling Forecasters & Body Clues": Discuss common situations (antecedents) that might make us feel frustrated, angry, or worried (e.g., ${commonTriggers}). "How do our bodies tell us we're starting to feel a big emotion?" (e.g., fast heart, tight fists, shaky hands). Use a feelings wheel with diverse faces. Connect body clues to specific feelings.`,
-                        `"My ${interestPrefix}Cool Down Toolkit": Introduce 1-2 simple, age-appropriate calming strategies (replacement behaviors). Examples: ${gradeLevel === "K-1" ? `'Smell the ${interestFlavor || "flower"}, blow out the ${interestFlavor || "candle"}' (deep breath using a real or imaginary prop)` : gradeLevel === "2-3" ? `'Turtle Time' (pull into shell, take 3 deep breaths) or '5 Finger Starfish Breathing'` : `'Mindful Grounding' (name 3 things you see, 2 you hear, 1 you feel) or 'Positive Self-Talk for ${interestFlavor || "Challenges"}' (e.g., 'I can try a different way')`}. Practice these when students are calm.`,
-                        `"Strategy Scene - Act it Out!": Students (or teacher with puppets for K-1) role-play a scenario (e.g., "You're trying to build a tall ${interestFlavor || "block tower"} and it keeps falling. You start to feel very frustrated."). One student acts out feeling frustrated (using body clues discussed), another student (or teacher) prompts them to use a "Cool Down Tool." Then, they practice asking for help or a short break using polite words (e.g., 'I need a minute, please' or 'Can you help me with this ${interestFlavor || "part"}?').`,
-                        `Discuss: "How did using the strategy feel? Was it easy or hard? What's a respectful way to communicate you need a moment or help when working on ${interestFlavor || "tasks"}?" (Reinforces teaching appropriate requesting skills).`
-                    ];
-                    activity.differentiation = `K-1: Focus on one strategy with highly visual aids (e.g., puppet shows for scenarios). Teacher leads role-play. Use very simple scenarios. 2-3: Offer a choice of 2 strategies, more peer-led role-play with simple scripts or comic strip creation. 4-6: Students can generate their own scenarios related to ${interestFlavor || "their experiences"}, identify their personal triggers, and develop a personalized cool-down plan (written or drawn). Discuss different intensities of feelings and matching strategies. UDL: Allow students to draw their feeling/strategy instead of acting. Provide visual scripts for role-plays.`;
-                } else { // Generic fallback - enhance this with more skill-specific default activities
-                    activity.title = `${interestPrefix}Skill Spotlight on: ${skillName}`;
-                    activity.description = `This activity will help us explore and practice ${skillName.toLowerCase()} using ${interestFlavor || "fun and engaging examples"}. (SEL: ${selText}) ${devNote}`;
-                    let exampleTask = `a short '${interestFlavor || "Memory"} March' game for Working Memory (remember a sequence of 3-4 actions related to ${interestFlavor || "a story character"}), a 'What if this ${interestFlavor || "character"} chose differently?' discussion for Cognitive Flexibility, or acting out how to ask to join a ${interestFlavor || "playground"} game for Social Skills.`;
-                    activity.steps = [
-                        `Introduce ${skillName.toLowerCase()} with a relatable example, perhaps involving ${interestFlavor || 'school tasks'}. "For instance, when you're trying to solve a ${interestFlavor || "puzzle"}, you need good ${skillName.toLowerCase()} to..."`,
-                        `Engage in a brief, structured task focusing on the skill: ${exampleTask}`,
-                        `Discuss: How did we use our ${skillName.toLowerCase()} skill? When else could this be helpful, maybe when working on ${interestFlavor || 'projects with friends'}?`
-                    ];
-                    activity.differentiation = `K-1: Use concrete materials, direct modeling, very short activities, lots of praise for effort. 2-3: Partner work, slightly longer tasks, simple written/drawn responses. 4-6: Small group problem-solving, apply to more complex academic or social scenarios, encourage students to generate their own examples. UDL: Offer choice in how to demonstrate understanding (verbal, written, drawn).`;
-                }
-                // --- End of More Varied Activity Content ---
-                
-                if (preferredModalities.includes('artsCrafts') && chosenActivityType !== 'Hands-On Task/Project Intro') {
-                    activity.differentiation += ` Art Connection: Students could draw a comic strip showing someone using the ${skillName.toLowerCase()} strategy effectively in a ${interestFlavor ? interestFlavor + " " : ""}school situation, or create a small craft (e.g., a ${interestFlavor || "character"} puppet) representing a key idea from the lesson.`;
-                }
-                if (preferredModalities.includes('storytellingDrama') && chosenActivityType !== 'Role-Play') {
-                    activity.differentiation += ` Story/Drama Link: As a group, create a short story or a tableau (frozen scene) about a character (perhaps a ${interestFlavor ? interestFlavor + " " : ""}curious explorer) who learns to use ${skillName.toLowerCase()} to solve a problem. This could be told using ${interestFlavor || "props"}.`;
-                }
-                if (preferredModalities.includes('techIntegration')) {
-                    activity.differentiation += ` Tech Idea: If appropriate and available, use a simple polling tool for quick reflections on ${skillName.toLowerCase()}, or find a short educational video/interactive game that reinforces ${skillName.toLowerCase()}${interestFlavor ? " (related to " + interestFlavor + " if possible)" : ""}. For older grades, a collaborative digital document for brainstorming could be used.`;
-                }
-                return activity;
-            }
-
-            function getReflection(skill, gradeLevel, selCompetencies, studentInterests = [], preferredModalities = []) {
-                const skillName = generateUniqueSkillName(skill);
-                const selText = selCompetencies[0].toLowerCase(); 
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "something you enjoy";
-                let modalityUsed = preferredModalities.length > 0 ? `learning through ${preferredModalities.map(m=>m.replace(/([A-Z0-9])/g, ' $1').toLowerCase().trim()).join(' and ')}` : "today's activity";
-                
-                let bloomQuestionVerb = getBloomVerbs(gradeLevel === "4-6" ? "evaluate" : "apply").toLowerCase();
-
-                let questions = [
-                    `"What was the main skill we focused on today (${skillName.toLowerCase()})? How did you ${bloomQuestionVerb} it during ${modalityUsed}, perhaps when we discussed ${randomInterest}?"`,
-                    `"What was one part of our activity that made your brain work hard? What felt a bit easier, and why do you think that was?" (SEL: Self-Awareness)`,
-                    `"How can using ${skillName.toLowerCase()} help you when you are learning about ${randomInterest}, working with classmates, or tackling challenging tasks?" (SEL: ${selText}, Responsible Decision-Making). This shows how these skills are useful everywhere!`,
-                    `"What's one 'super strategy' or idea about ${skillName.toLowerCase()} you'll try to remember and use this week, maybe when you're doing something related to ${randomInterest}?" (Fostering generalization)`,
-                    `"If you were to teach a friend about ${skillName.toLowerCase()}, what's the most important thing you would tell them, especially if they love ${randomInterest} too?"`
-                ];
-                if (gradeLevel === "K-1") { 
-                    questions.push(`"Show me a 'thumbs up' if you tried your best with ${skillName.toLowerCase()} today! How can ${skillName.toLowerCase()} help us be good friends when playing with ${randomInterest || "our toys"}?"`);
-                    questions.push(`"Draw a picture of yourself using your ${skillName.toLowerCase()} superpower during our ${modalityUsed} or while thinking about ${randomInterest}."`);
-                } else if (gradeLevel === "2-3") { 
-                    questions.push(`"What's one new thing you learned or a new way you thought about ${skillName.toLowerCase()} or ${selText} today, especially from our ${modalityUsed} or discussions about ${randomInterest || "our topics"}? Share with a shoulder partner."`);
-                    questions.push(`"On a 'Fist to Five' (0 fingers = not at all, 5 fingers = super well), show how well you think you used a ${skillName.toLowerCase()} strategy today. What's one thing that helped?"`);
-                } else { // 4-6
-                    questions.push(`"On a scale of 1 to 3 'Brain Boosts' (1=still practicing, 2=getting it, 3=feeling strong), how do you feel about using ${skillName.toLowerCase()} after today? What's one specific action you can take to get another 'Brain Boost' next time, especially when working on ${randomInterest}-related tasks?" (SEL: Self-Awareness, Self-Management)`);
-                    questions.push(`"How did the ${modalityUsed} today support or challenge your learning of ${skillName.toLowerCase()}? What might make it even better for learning about ${randomInterest}?" (Metacognition)`);
-                }
-                // Select 2-3 unique questions for variety
-                let selectedQuestions = [];
-                while(selectedQuestions.length < Math.min(3, questions.length)) {
-                    let q = getRandomElement(questions);
-                    if (!selectedQuestions.includes(q)) {
-                        selectedQuestions.push(q);
-                    }
-                }
-
-                return `Gather for a debrief. Use prompts like: ${selectedQuestions.join(" ")}. Encourage sharing and connect back to real-world applications and student interests. Use 'turn and talk' for K-3, or a quick journal jot/digital poll for 4-6 before sharing. This helps 'check' understanding and 'act' on new learning.`;
-            }
-
-            function getClosing(skill, gradeLevel, studentInterests = []) {
-                const skillName = generateUniqueSkillName(skill);
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests).charAt(0).toUpperCase() + getRandomElement(studentInterests).slice(1) : "your favorite things";
-                let closings = [
-                    `Fantastic ${skillName.toLowerCase()} practice today, everyone! Your 'mission' is to spot ${skillName.toLowerCase()} in action this week – maybe when you're reading about ${randomInterest}, playing a game, or helping at home. Tell us about it next time!`,
-                    `Great job focusing on ${skillName.toLowerCase()}! Remember, just like practicing ${randomInterest}-related skills, the more we practice this, the better we get. Look for one chance to use it before our next session.`
-                ];
-
+            if (skill.includes("Planning")) {
+                activity.title = `${interest}-Themed Master Planners`;
+                activity.description = `Effective ${skillName.toLowerCase()} is like drawing a map for a journey! It helps us complete tasks like a ${interest} diorama.`;
                 if (gradeLevel === "K-1") {
-                    closings.push(`Awesome effort! Remember to use your ${skillName.toLowerCase()} superpowers like a ${randomInterest} superhero! Ask a grown-up to help you spot it, or draw a picture of you using the skill with your ${randomInterest} toys.`);
-                } else if (gradeLevel === "2-3") {
-                    closings.push(`Well done, ${skillName.toLowerCase()} explorers! Try to find one situation at home or with friends where you can use what we learned today, especially if it involves ${randomInterest}. Be ready to share!`);
-                } else { // 4-6
-                    closings.push(`Excellent critical thinking and strategy use with ${skillName.toLowerCase()} today. Next session, we'll build on this by [mention next skill or application, e.g., 'applying it to a group research project about ${randomInterest}']. For home, try to teach someone in your family one strategy we learned for ${skillName.toLowerCase()} and how it connects to ${randomInterest}.`);
+                    activity.steps = ["Teacher presents a 3-step visual sequence for a simple task.", "Students point to each step as the teacher calls it out.", "Complete the task following the visual plan."];
+                } else {
+                    activity.steps = ["Task: 'Plan 3-4 key events to retell a story about ${interest}.'", "Students use a 'First, Next, Then, Finally' graphic organizer.", "In pairs, students share their plans and give feedback."];
                 }
-                if (Math.random() < 0.9) { 
-                    return getRandomElement(closings);
+            } else if (skill.includes("Memory")) {
+                activity.title = `${interest}-Themed Memory Wizards`;
+                if (gradeLevel === "K-1") {
+                    activity.steps = ["Teacher gives a 2-step instruction related to classroom objects (e.g., 'Touch your nose, then clap your hands').", "Students perform the actions.", "Discuss what helped them remember."];
+                } else {
+                    activity.steps = ["Play 'Memory Chain': Start with 'For our ${interest} adventure, I'm bringing...'. Each student repeats and adds an item.", "Discuss strategies used to remember the chain."];
                 }
-                return ""; // Occasionally, no formal closing message
             }
+            return activity;
+        },
+
+        getReflection(skill, gradeLevel, studentInterests = []) {
+            const skillName = this.getUniqueSkillName(skill);
+            let interest = this.getRandomElement(studentInterests) || "something you enjoy";
+            return `Gather for a debrief. Ask: "What was one part of our activity that made your brain work hard? How can using ${skillName.toLowerCase()} help you when you are learning about ${interest}?" Use 'turn and talk' for K-3 or a quick journal entry for 4-6.`;
+        },
+        
+        generateSessionContent(rawSkill, gradeLevel, weekNum, lessonNum, allSelectedSkillsRaw, studentInterests, preferredModalities) {
+            const skillName = this.getUniqueSkillName(rawSkill);
+            const selCompetencies = this.getAssociatedSECompetencies(rawSkill);
+            const materials = this.getMaterials(rawSkill, gradeLevel, preferredModalities).join(', ');
+            const warmup = this.getWarmUp(rawSkill, gradeLevel, studentInterests);
+            const miniLesson = this.getMiniLesson(rawSkill, gradeLevel, selCompetencies, studentInterests);
+            const coreActivity = this.getCoreActivity(rawSkill, gradeLevel, studentInterests);
+            const reflection = this.getReflection(rawSkill, gradeLevel, studentInterests);
+
+            return `
+                <div class="ml-0 md:ml-4 mt-4 p-4 bg-white rounded shadow-md border border-slate-200">
+                    <h5 class="text-md font-semibold text-slate-800 mb-2">Week ${weekNum}, Session ${lessonNum} - Focus Skill: ${skillName}</h5>
+                    <h6>Learning Objectives:</h6>
+                    <ul class="list-disc list-inside pl-4 text-sm">
+                        <li>Students will be able to ${this.getBloomVerbs(gradeLevel).toLowerCase()} ${skillName.toLowerCase()}.</li>
+                        <li>Students will practice ${selCompetencies[0].toLowerCase()} by engaging in the session activities.</li>
+                    </ul>
+                    <h6>Materials Needed:</h6><p class="text-sm">${materials}</p>
+                    <h6>Warm-Up (Approx. 5 min):</h6><p class="text-sm">${warmup}</p>
+                    <h6>Mini-Lesson (Approx. 5-7 min):</h6><p class="text-sm">${miniLesson}</p>
+                    <h6>Core Activity: ${coreActivity.title} (Approx. 15-20 min):</h6>
+                    <p class="text-sm">${coreActivity.description}</p>
+                    <ol class="list-decimal list-inside pl-4 text-sm space-y-1">${coreActivity.steps.map(step => `<li>${step}</li>`).join('')}</ol>
+                    <p class="text-xs italic mt-1">Differentiation: ${coreActivity.differentiation}</p>
+                    <h6>Wrap-up & Reflection (Approx. 5 min):</h6><p class="text-sm">${reflection}</p>
+                </div>
+            `;
+        },
+        
+        generateUnitPlan() {
+            const { gradeLevel, selectedEfSkills, selectedBehSkills, numWeeks, lessonsPerWeek, primarySkills, studentInterests, preferredModalities } = UnitPlanGenerator.state;
+            const allSelectedSkillsRaw = [...selectedEfSkills, ...selectedBehSkills];
+            let html = ``;
             
-            function getTeacherTip(skill, gradeLevel, preferredModalities = [], allSelectedSkillsRaw = [], studentInterests = []) { 
-                const skillName = generateUniqueSkillName(skill);
-                let tips = [];
-                let randomInterest = studentInterests && studentInterests.length > 0 ? getRandomElement(studentInterests) : "various topics"; 
-
-                tips.push(`Consistently model 'think-alouds' when you demonstrate ${skillName.toLowerCase()}. Example for Planning: 'Okay, for our ${randomInterest} project, my first step is to gather materials. I need to think about what those are... Hmm, paper, crayons, and maybe some ${randomInterest}-themed stickers!' This makes the internal process visible and relatable.`);
-                tips.push(`Provide specific, positive reinforcement immediately when students attempt or successfully use ${skillName.toLowerCase()} strategies. Describe the behavior you saw: "I noticed you took three deep breaths when the ${randomInterest} tower fell – that was excellent ${generateUniqueSkillName('Emotional Regulation (EF)')}!" or "You made a clear plan for your ${randomInterest} story, great ${generateUniqueSkillName('Planning and Organization')}!" Focus on effort and strategy use, not just outcome. Link it to CASEL competencies: 'That showed great self-management!'`);
-                tips.push(`Break down multi-step directions, especially for tasks requiring strong ${skill.includes("Working Memory") ? "Working Memory" : skillName.toLowerCase()}. Use visuals (like a mini-schedule for a ${randomInterest} activity sequence) and minimize classroom distractions during focused work times. Check for understanding frequently using varied methods (e.g., "Tell me the first step for our ${randomInterest} craft," "Show me what to do next with the ${randomInterest} game pieces"). (UDL Principle: Representation)`);
-                tips.push(`Establish highly predictable classroom routines and clearly post visual schedules (perhaps with ${randomInterest} icons!). This reduces cognitive load, supports "Foundational Regulators" (K-1) and "Emerging Self-Managers" (2-3), and helps students who find ${skillName.toLowerCase()} or transitions challenging. Provide verbal and visual warnings 5 and 2 minutes before transitions.`);
-                
-                if (skill.includes("Inhibition") || skill.includes("Impulse Control")) { 
-                    tips.push(`For ${skillName.toLowerCase()}: Use explicit visual cues (e.g., stop signs, hand signals like a 'pause' button) and provide pre-corrects before activities requiring waiting, turn-taking (like in a ${randomInterest} game), or quiet focus. Teach specific phrases like "May I have a turn with the ${randomInterest} toy, please?" or "I need a break from this ${randomInterest} task." as replacement behaviors for impulsivity. (Tier 1/2 support)`); 
-                    if (gradeLevel === "K-1") { tips.push(`Keep wait times very brief initially and gradually increase. Use songs (about ${randomInterest} perhaps!), fingerplays, or movement breaks (like "Wiggle like a ${randomInterest} worm, then freeze!") to help during transitions or waiting periods. This supports "Guided Participants".`);} 
-                    else if (gradeLevel === "4-6") { tips.push(`Teach explicit 'Stop, Think, Choose' or 'See it, Say it (internally), Do it' routines. For older students ("Reflective Adapters"), discuss natural long-term consequences of impulsive actions (e.g., in a collaborative ${randomInterest} project) and practice problem-solving alternative responses in social scenarios related to ${randomInterest || "peer interactions"}.`);}
-                }
-                if (skill.includes("Emotional Regulation")) { 
-                    tips.push(`Create a clearly defined 'calm-down space' or 'reflection spot' (maybe with a ${randomInterest} theme) with optional sensory tools (if appropriate for your students and not overly stimulating). Proactively teach and practice calming techniques (e.g., 'Box Breathing', 'Grounding exercises using senses to describe a ${randomInterest} object') when students *are* calm, not just reactively during an incident. Validate all feelings ("It's okay to feel frustrated about the ${randomInterest} puzzle...") before guiding to a strategy. (UDL: Affective Networks)`); 
-                    if (allSelectedSkillsRaw.some(s => s.includes("Communication Skills"))) { tips.push(`Explicitly teach students to use "I feel..." statements and to appropriately request help or a break (e.g., "I feel frustrated with this ${randomInterest} worksheet, may I have some help?" or "I need a 2-minute break before we talk more about ${randomInterest}, please.") This serves as a functional replacement for disruptive emotional outbursts.`);}
-                }
-                if (skill.includes("Planning and Organization") || skill.includes("Initiation")) { 
-                    tips.push(`For ${skillName.toLowerCase()}: Use visual planners (daily/weekly), graphic organizers (for a ${randomInterest} report), checklists, or 'First-Then' boards (especially for K-1, e.g., "First finish ${randomInterest} puzzle, Then free choice"). Break large assignments into smaller, named steps with clear start/end points. For "Initiation," a visual timer for starting work or a 'task initiation routine' (e.g., 3 deep breaths, look at first step of the ${randomInterest} instructions) can be helpful.`); 
-                    if (gradeLevel === "4-6" && skill.includes("Time Management")) { tips.push(`Teach students to estimate time for tasks (e.g., "How long will it take to research 3 facts about ${randomInterest}?"). Use backward planning for larger ${randomInterest} projects. Introduce tools like online calendars or task management apps if tech is available. (UDL: Executive Functions)`);}
-                }
-                // ... (other existing tips, slightly enhanced if possible)
-                if (skill.includes("Attention and Focus")) { tips.push(`For ${skillName.toLowerCase()}: Minimize auditory and visual distractions during focused work. Provide clear, concise instructions, perhaps written and verbal. Consider preferential seating away from high-traffic areas. Allow for short, structured movement breaks (e.g., 2 minutes of "${randomInterest} stretches" before a read-aloud) or sensory tools if these are helpful and not distracting to others. Schedule highly engaging ${randomInterest}-themed activities after more demanding tasks.`);}
-                if (skill.includes("Cognitive Flexibility")) { tips.push(`When routines change or unexpected problems arise (e.g., a planned ${randomInterest} activity isn't possible due to a tech issue), explicitly label it as a chance to practice "flexible thinking." Brainstorm alternative solutions as a class or in small groups ("Our ${randomInterest} video won't play. What are two other ways we can learn about this?"). Praise students for adapting without major distress. This supports the "Flexible Adapter" stage.`);}
-
-                if (preferredModalities.includes('artsCrafts') && !skill.includes("Planning")) { 
-                    tips.push(`Integrate arts/crafts: Students can create visual reminders for ${skillName.toLowerCase()} strategies (e.g., a "Stoplight" for impulse control with a ${randomInterest ? randomInterest + " " : ""}character on it, or a ${randomInterest}-themed feelings collage). (UDL Principle: Multiple Means of Representation/Expression)`);
-                }
-                if (preferredModalities.includes('discussionOriented')) { 
-                    tips.push(`Since discussion is a preferred modality, ensure ample time for 'Think-Pair-Share', Socratic questioning, or small group debates when exploring ${skillName.toLowerCase()} strategies related to ${randomInterest || "topics"}. This encourages deeper processing.`);
-                }
-
-                if (tips.length > 0) { 
-                    let finalTips = []; 
-                    finalTips.push(getRandomElement(tips)); 
-                    if (tips.length > 1 && Math.random() > 0.3) { 
-                        let secondTip = getRandomElement(tips.filter(t => t !== finalTips[0])); 
-                        if (secondTip) finalTips.push(secondTip);
-                    } 
-                    return finalTips.join(" ");
-                }
-                return "Remember to model and reinforce these skills consistently throughout the day in various contexts, linking them to student interests whenever possible!";
+            const titleSkill = primarySkills.length > 0 ? primarySkills[0] : allSelectedSkillsRaw[0];
+            const title = `<h2>Unit: Strengthening ${this.getUniqueSkillName(titleSkill)} & Related Skills</h2>`;
+            html += title;
+            html += `<p><strong>Grade Range:</strong> ${gradeLevel}</p>`;
+            html += `<p><strong>Focus Skills:</strong> ${this.generateSkillList(allSelectedSkillsRaw)}</p>`;
+            html += `<p><strong>Duration:</strong> ${numWeeks} weeks (${lessonsPerWeek} sessions per week)</p>`;
+            
+            for (let i = 1; i <= numWeeks; i++) {
+                html += `<div class="mt-6 pt-4 border-t border-slate-300 page-break"><h3>Week ${i}</h3>`;
+                 for (let j = 1; j <= lessonsPerWeek; j++) {
+                     const lessonFocusSkillRaw = allSelectedSkillsRaw[((i-1) * lessonsPerWeek + (j-1)) % allSelectedSkillsRaw.length] || allSelectedSkillsRaw[0];
+                     html += this.generateSessionContent(lessonFocusSkillRaw, gradeLevel, i, j, allSelectedSkillsRaw, studentInterests, preferredModalities);
+                 }
+                html += `</div>`;
             }
+            return html;
+        }
+    },
 
-            function generateIntegrationIdeas(skillsRaw, gradeLevel, studentInterests = []) { 
-                let ideas = `<ul class="list-disc list-inside pl-4 text-sm space-y-1">`;
-                const uniqueSkillsText = generateSkillList(skillsRaw);
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "classroom activities";
-                let capRandomInterest = randomInterest.charAt(0).toUpperCase() + randomInterest.slice(1);
-                let capAllInterests = studentInterests.length > 0 ? studentInterests.map(i => i.charAt(0).toUpperCase() + i.slice(1)).join(' or ') : capRandomInterest;
-                
-                // Add more variety and specificity to integration ideas
-                ideas += `<li><strong>Morning Meeting/Circle Time:</strong> Start with a quick game (e.g., a memory game with ${capRandomInterest} pictures for Working Memory, a "Simon Says" with a ${capRandomInterest} theme for Inhibition), a brief scenario discussion ("What if two friends want the same ${capRandomInterest} toy and get upset?" for Conflict Resolution/Emotional Regulation), or a mindful minute focusing on ${capRandomInterest} sounds to practice ${generateUniqueSkillName('Attention and Focus')}. Reinforce vocabulary related to "${uniqueSkillsText}".</li>`;
-                ideas += `<li><strong>Academic Task Framing (Explicit Instruction):</strong> Before starting a task, explicitly state which of the ${uniqueSkillsText.toLowerCase()} will be helpful. Example: "For this ${capRandomInterest} science experiment, we'll need strong ${generateUniqueSkillName('Planning and Organization')} to follow the steps in order, ${generateUniqueSkillName('Working Memory')} to remember what we observed, and ${generateUniqueSkillName('Self-Monitoring (EF)')} to check if our results make sense. Let's quickly review how we use those skills." (Connects to 'I Do' part of Gradual Release).</li>`;
-                ideas += `<li><strong>Visual Timers & Schedules with ${capAllInterests} Themes:</strong> Use visual timers (sand timers for K-1, digital for older) for tasks and display a daily visual schedule with ${capAllInterests} icons. This supports ${generateUniqueSkillName('Time Management')}, ${generateUniqueSkillName('Initiation')}, and predictability. Verbally refer to the schedule: "Next, our ${capRandomInterest} math game!"</li>`;
-                ideas += `<li><strong>Choice Boards & ${capAllInterests} Interest-Based Learning Centers:</strong> Offer choices in how students complete assignments (e.g., write a ${capRandomInterest} story, draw a ${capRandomInterest} comic, build a ${capRandomInterest} model) or allow them to select project topics related to ${capAllInterests}. Then, explicitly teach how ${uniqueSkillsText.toLowerCase()} (e.g., ${generateUniqueSkillName('Planning and Organization')} for a ${capRandomInterest} diorama, ${generateUniqueSkillName('Initiation')} to start their chosen ${capRandomInterest} task) can help them manage their choices and succeed. (UDL: Engagement)</li>`;
-                ideas += `<li><strong>Transition Cues & ${capRandomInterest} Songs/Movement:</strong> Use predictable verbal cues ("In 2 minutes, we'll clean up from our ${capRandomInterest} art and get ready for..."), songs (about ${capRandomInterest} or transitioning), or visual signals for transitions. Practice using ${generateUniqueSkillName('Inhibition (Impulse Control)')} (e.g., "Freeze like a ${capRandomInterest} statue!") and ${generateUniqueSkillName('Working Memory')} to follow transition routines smoothly.</li>`;
-                // ... (keep and enhance other integration ideas)
-                 ideas += `<li><strong>"Oops!" Moments & Flexible Thinking with ${capRandomInterest}:</strong> When unexpected things happen (e.g., a planned ${capRandomInterest} activity is rained out, or a tech tool for ${capRandomInterest} research isn't working), label it as an opportunity to practice ${generateUniqueSkillName('Cognitive Flexibility')}. Brainstorm alternative solutions as a class: "Our ${capRandomInterest} outdoor game isn't possible. What are two other fun ${capRandomInterest}-related things we could do inside?"</li>`;
-                ideas += `<li><strong>Literature Connections & Character Study (SEL focus):</strong> During read-alouds (perhaps books about ${capAllInterests}), pause to discuss how characters are using (or not using) skills like ${uniqueSkillsText.toLowerCase()}. "How did the ${capRandomInterest} character show ${generateUniqueSkillName('Emotional Regulation (EF)')} when they felt sad? What strategy did they use?" Use stories to model expectations and discuss CASEL competencies.</li>`;
-                ideas += `<li><strong>"Strategy Share" Board with ${capAllInterests} Examples:</strong> Create a space (physical or digital) where students can share (drawings for K-1, written notes or short videos for older grades) a strategy they used successfully for one of the ${uniqueSkillsText.toLowerCase()}, possibly related to a ${capRandomInterest} task. Example: "I used 'chunking' to learn my ${capRandomInterest} facts!"</li>`;
+    // --- 7. INITIALIZATION ---
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.elements = {
+                form: document.getElementById('unitPlanForm'),
+                gradeLevel: document.getElementById('gradeLevel'),
+                numWeeks: document.getElementById('numWeeks'),
+                lessonsPerWeek: document.getElementById('lessonsPerWeek'),
+                efSkillsContainer: document.getElementById('efSkillsContainer'),
+                behSkillsContainer: document.getElementById('behSkillsContainer'),
+                primarySkill1: document.getElementById('primarySkill1'),
+                primarySkill2: document.getElementById('primarySkill2'),
+                studentInterests: document.getElementById('studentInterests'),
+                teachingModalitiesContainer: document.getElementById('teachingModalitiesContainer'),
+                errorMessage: document.getElementById('errorMessage'),
+                generateButton: document.getElementById('generateButton'),
+                loadingIndicator: document.getElementById('loadingIndicator'),
+                resultsContainer: document.getElementById('resultsContainer'),
+                results: document.getElementById('results'),
+                printButton: document.getElementById('printButton'),
+                exportPdfButton: document.getElementById('exportPdfButton'),
+                skillTooltip: document.getElementById('skillTooltip'),
+                generationProgressBarContainer: document.getElementById('generationProgressBarContainer'),
+                generationProgressBar: document.getElementById('generationProgressBar'),
+            };
 
-                ideas += `</ul>`;
-                return ideas;
-            }
+            const boundHandleSkillChange = this.handlers.handleSkillChange.bind(this);
+            this.ui.populateCheckboxes(this.elements.efSkillsContainer, this.config.efSkills, 'efSkills', 'sky', boundHandleSkillChange);
+            this.ui.populateCheckboxes(this.elements.behSkillsContainer, this.config.behSkills, 'behSkills', 'rose', boundHandleSkillChange);
+            this.ui.populateModalities();
 
-            function generateProgressMonitoringTips(skillsRaw, gradeLevel, studentInterests = []) { 
-                let tips = `<ul class="list-disc list-inside pl-4 text-sm space-y-1">`;
-                const focusSkillsText = generateSkillList(skillsRaw);
-                let randomInterest = studentInterests.length > 0 ? getRandomElement(studentInterests) : "learning activities";
-                const dataCollectionSourceNote = " (Consider using simple rubrics or checklists aligned with IEP goals if applicable. Ensure operational definitions are clear for consistency)."; 
-                
-                // Add more variety and specificity to progress monitoring
-                tips += `<li><strong>Direct Observation & Anecdotal Records (Context is Key):</strong> During various activities (especially those related to student interests like ${randomInterest}), take brief, objective notes on specific instances where students demonstrate or struggle with ${focusSkillsText.toLowerCase()}. Note the context, antecedent, behavior, and consequence (A-B-C) if relevant for behavior skills. This provides rich qualitative data. Example: "During ${randomInterest} group work, student X used 'I feel' statement (Communication Skill) when disagreeing, instead of previous shouting (Impulse Control)."</li>`;
-                // ... (keep and enhance existing progress monitoring tips, ensuring interest links)
-                if (skillsRaw.some(skill => skill.includes("Attention and Focus") || skill.toLowerCase().includes("off-task"))) { tips += `<li>For <strong>Attention/Focus skills</strong>: Consider using <strong>Duration Recording</strong> (how long student stays on task during a ${randomInterest} worksheet) or <strong>Partial-Interval Recording</strong> (e.g., note if on-task at any point in 1-minute intervals during a ${randomInterest} game). This helps quantify engagement levels.${dataCollectionSourceNote}</li>`;}
-                if (skillsRaw.some(skill => skill.includes("Planning and Organization") || skill.includes("Self-Monitoring") || skill.includes("Time Management"))) { tips += `<li>For <strong>Planning/Organization/Self-Monitoring/Time Management</strong>: Use <strong>Permanent Product Recording</strong> by reviewing completed work (e.g., planners for ${randomInterest} projects, graphic organizers for a ${randomInterest} story, checklists with items marked off, self-correction marks on assignments). Look for evidence of strategy use, not just completion. ${dataCollectionSourceNote}</li>`;}
-
-                tips += `<li><strong>Student Self-Reflection (Age-Appropriate & Brief with ${randomInterest} links):</strong> ${gradeLevel === "K-1" ? `Use simple visual scales (e.g., smiley faces for 'I used my listening ears during our ${randomInterest} story') or "I can..." picture statements related to the skill and ${randomInterest}. Teacher can scribe or guide selection.` : ""} ${gradeLevel === "2-3" ? `Simple rating scales (e.g., 'Red/Yellow/Green light' on 'I followed the plan for our ${randomInterest} activity') or sentence starters like: 'Today, using [skill] for the ${randomInterest} task was easy/hard because... Next time I will try...'` : ""} ${gradeLevel === "4-6" ? `Have students briefly rate their use of a specific strategy for ${generateUniqueSkillName(getRandomElement(skillsRaw))} during a ${randomInterest} task on an exit ticket (e.g., "How effectively did I manage my time on the ${randomInterest} research? 1-5 scale. Why?"). Or, use a quick journal prompt: 'One way I used [skill] today for ${randomInterest} was... One challenge was...' (Links to Bloom's 'Evaluate')` : ""}</li>`;
-                tips += `<li><strong>Quick Checks for Understanding (CFUs) with ${randomInterest}:</strong> After teaching a strategy for ${generateUniqueSkillName(getRandomElement(skillsRaw))}, use a quick CFU like "Show me with your fingers, how many steps are in our ${randomInterest} planning strategy?" or "Turn and tell your partner one time you could use the 'calm down' technique if you got frustrated with the ${randomInterest} puzzle."</li>`;
-                tips += `<li><strong>Portfolio Entries with ${randomInterest} focus:</strong> Collect specific work samples (e.g., a planning sheet for a ${randomInterest} project, a written reflection after a ${randomInterest}-themed group task, a drawing showing a problem-solving process for a ${randomInterest} challenge) that directly demonstrate the application (or development) of ${focusSkillsText.toLowerCase()}. Date them to show growth.</li>`;
-
-                tips += `</ul>`;
-                return tips;
-            }
-
-            // Add event listener for conceptual regenerate buttons (if they were to be made functional)
-            // This is a placeholder for the more complex logic needed.
-            resultsDiv.addEventListener('click', function(event) {
-                if (event.target.classList.contains('regenerate-section-btn')) {
-                    const sectionType = event.target.dataset.sectionType;
-                    const skill = event.target.dataset.skill;
-                    const grade = event.target.dataset.grade;
-                    // In a real implementation, you'd call a function here to regenerate
-                    // just that part of the content and update the DOM.
-                    alert(`Conceptual: Regenerate "${sectionType}" clicked. Skill: ${skill || 'N/A'}, Grade: ${grade || 'N/A'}. This would require more JS logic.`);
-                }
-            });
-
-
-            console.log("DEBUG: Enhanced Interactive Unit Plan Generator script fully initialized and event listeners attached.");
-        }); // End DOMContentLoaded
-    } catch (e) {
-        console.error("DEBUG: A very early JavaScript error occurred OUTSIDE DOMContentLoaded:", e.stack);
-        document.body.insertAdjacentHTML('afterbegin', `<div style="background-color: red; color: white; padding: 20px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; font-family: sans-serif;">A critical JavaScript error occurred. Please check the browser console (F12) for details. Error: ${e.message}</div>`);
+            this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit.bind(this));
+            this.elements.printButton.addEventListener('click', this.handlers.handlePrint);
+            this.elements.exportPdfButton.addEventListener('click', this.handlers.handlePdfExport);
+            document.addEventListener('click', this.handlers.handleDocumentClick);
+        });
     }
-</script>
+};
 
+UnitPlanGenerator.init();
+
+</script>
 </body>
 </html>
