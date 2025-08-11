@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-6 Unit Plan Generator (Interactive & Enhanced - v4)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
@@ -184,9 +183,6 @@
             <div class="flex justify-between items-center mb-4 no-print">
                 <h2 class="text-2xl font-bold text-sky-700">Generated Unit Plan</h2>
                 <div>
-                    <button type="button" id="exportPdfButton" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 text-sm mr-2 disabled:bg-amber-300">
-                        Export PDF
-                    </button>
                     <button type="button" id="printButton" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50 text-sm">
                         Print
                     </button>
@@ -353,38 +349,7 @@ const UnitPlanGenerator = {
         },
 
         handlePdfExport() {
-            const button = UnitPlanGenerator.elements.exportPdfButton;
-            const originalText = button.innerHTML;
-            button.disabled = true;
-            button.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Exporting...`;
-
-            const element = UnitPlanGenerator.elements.results;
-            const { gradeLevel, numWeeks } = UnitPlanGenerator.state;
-            const filename = `Unit-Plan-${gradeLevel}-${numWeeks}-Weeks.pdf`;
-
-            const opt = {
-              margin:       [0.5, 0.5, 0.5, 0.5], // inches
-              filename:     filename,
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-              pagebreak:    { mode: ['css', 'legacy'] }
-            };
-
-            html2pdf().from(element).set(opt).save().then(() => {
-                button.disabled = false;
-                button.innerHTML = originalText;
-            }).catch(err => {
-                console.error("PDF Export failed:", err);
-                button.disabled = false;
-                button.innerHTML = originalText;
-                alert("Sorry, there was an error creating the PDF.");
-            });
+            // This handler is now removed as the button is gone.
         }
     },
 
@@ -698,7 +663,6 @@ const UnitPlanGenerator = {
                 resultsContainer: document.getElementById('resultsContainer'),
                 results: document.getElementById('results'),
                 printButton: document.getElementById('printButton'),
-                exportPdfButton: document.getElementById('exportPdfButton'),
                 skillTooltip: document.getElementById('skillTooltip'),
                 generationProgressBarContainer: document.getElementById('generationProgressBarContainer'),
                 generationProgressBar: document.getElementById('generationProgressBar'),
@@ -710,7 +674,6 @@ const UnitPlanGenerator = {
 
             this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit);
             this.elements.printButton.addEventListener('click', this.handlers.handlePrint);
-            this.elements.exportPdfButton.addEventListener('click', this.handlers.handlePdfExport);
             document.addEventListener('click', this.handlers.handleDocumentClick);
         });
     }
