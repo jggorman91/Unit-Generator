@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-6 Unit Plan Generator (Interactive & Enhanced - v4)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
@@ -48,7 +49,7 @@
             outline: none;
         }
 
-        /* Print Styles */
+        /* Print and PDF Styles */
         @media print {
             @page {
                 margin: 20mm 15mm;
@@ -97,8 +98,8 @@
                     <select id="numWeeks" name="numWeeks" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
                         <option value="1">1 Week</option>
                         <option value="2">2 Weeks</option>
-                        <option value="3">3 Weeks (Premium)</option>
-                        <option value="4">4 Weeks (Premium)</option>
+                        <option value="3">3 Weeks</option>
+                        <option value="4">4 Weeks</option>
                     </select>
                 </div>
                 <div>
@@ -183,7 +184,7 @@
             <div class="flex justify-between items-center mb-4 no-print">
                 <h2 class="text-2xl font-bold text-sky-700">Generated Unit Plan</h2>
                 <div>
-                    <button type="button" id="exportPdfButton" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 text-sm mr-2" title="Export to PDF (Premium Feature)">
+                    <button type="button" id="exportPdfButton" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 text-sm mr-2 disabled:bg-amber-300">
                         Export PDF
                     </button>
                     <button type="button" id="printButton" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50 text-sm">
@@ -197,7 +198,7 @@
     </div>
 
     <footer class="text-center mt-12 pb-8 no-print">
-         <p class="text-sm text-slate-500">Content generated is for educational purposes and should be reviewed by a qualified educator. Some features may be part of a premium offering.</p>
+         <p class="text-sm text-slate-500">Content generated is for educational purposes and should be reviewed by a qualified educator.</p>
     </footer>
 
 <script>
@@ -205,8 +206,8 @@
 const UnitPlanGenerator = {
     // --- 1. CONFIGURATION & DATA ---
     config: {
-        isPaidTier: false, // In a real app, this would be determined by user login
-        maxFreeWeeks: 2,
+        isPaidTier: true, 
+        maxFreeWeeks: 2, 
         skillDefinitions: {
              "Working Memory": "The ability to hold and manipulate information in mind for short periods. For example, remembering multi-step instructions or details of a story.",
              "Inhibition (Impulse Control)": "The capacity to pause and think before acting or speaking. Helps resist distractions or urges. Essential for following rules and delaying gratification.",
@@ -272,7 +273,7 @@ const UnitPlanGenerator = {
     },
 
     // --- 2. APPLICATION STATE ---
-    state: {}, // Will be populated from form
+    state: {}, 
 
     // --- 3. DOM ELEMENTS ---
     elements: {},
@@ -352,7 +353,38 @@ const UnitPlanGenerator = {
         },
 
         handlePdfExport() {
-             alert("PDF Export is a premium feature. This would require a library like jsPDF or html2pdf.js.");
+            const button = UnitPlanGenerator.elements.exportPdfButton;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Exporting...`;
+
+            const element = UnitPlanGenerator.elements.results;
+            const { gradeLevel, numWeeks } = UnitPlanGenerator.state;
+            const filename = `Unit-Plan-${gradeLevel}-${numWeeks}-Weeks.pdf`;
+
+            const opt = {
+              margin:       [0.5, 0.5, 0.5, 0.5], // inches
+              filename:     filename,
+              image:        { type: 'jpeg', quality: 0.98 },
+              html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+              pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }).catch(err => {
+                console.error("PDF Export failed:", err);
+                button.disabled = false;
+                button.innerHTML = originalText;
+                alert("Sorry, there was an error creating the PDF.");
+            });
         }
     },
 
@@ -438,7 +470,6 @@ const UnitPlanGenerator = {
             const { elements, config } = UnitPlanGenerator;
             let numWeeks = parseInt(elements.numWeeks.value);
             if (!config.isPaidTier && numWeeks > config.maxFreeWeeks) {
-                alert(`Generating plans longer than ${config.maxFreeWeeks} weeks is a premium feature. The plan will be shortened.`);
                 numWeeks = config.maxFreeWeeks;
                 elements.numWeeks.value = numWeeks;
             }
