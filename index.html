@@ -53,11 +53,17 @@
             @page {
                 margin: 20mm 15mm;
             }
-            body > *:not(#resultsContainer) {
-                display: none !important;
+            body * {
+                visibility: hidden;
             }
             #resultsContainer, #resultsContainer * {
                 visibility: visible;
+            }
+            #resultsContainer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
             }
              #results {
                 box-shadow: none;
@@ -669,9 +675,9 @@ const UnitPlanGenerator = {
             this.ui.populateCheckboxes(this.elements.behSkillsContainer, this.config.behSkills, 'behSkills', 'rose', this.handlers.handleSkillChange);
             this.ui.populateModalities();
 
-            this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit);
-            this.elements.printButton.addEventListener('click', this.handlers.handlePrint);
-            document.addEventListener('click', this.handlers.handleDocumentClick);
+            this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit.bind(this));
+            this.elements.printButton.addEventListener('click', this.handlers.handlePrint.bind(this));
+            document.addEventListener('click', this.handlers.handleDocumentClick.bind(this));
         });
     }
 };
