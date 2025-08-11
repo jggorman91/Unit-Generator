@@ -97,8 +97,8 @@
                     <select id="numWeeks" name="numWeeks" class="mt-1 block w-full p-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
                         <option value="1">1 Week</option>
                         <option value="2">2 Weeks</option>
-                        <option value="3">3 Weeks </option>
-                        <option value="4">4 Weeks </option>
+                        <option value="3">3 Weeks (Premium)</option>
+                        <option value="4">4 Weeks (Premium)</option>
                     </select>
                 </div>
                 <div>
@@ -456,41 +456,41 @@ const UnitPlanGenerator = {
         },
         
         showLoading() {
-            this.elements.loadingIndicator.classList.remove('hidden');
-            this.elements.resultsContainer.classList.add('hidden');
-            this.elements.generationProgressBarContainer.classList.remove('hidden');
-            this.elements.generationProgressBar.style.width = '0%';
+            UnitPlanGenerator.elements.loadingIndicator.classList.remove('hidden');
+            UnitPlanGenerator.elements.resultsContainer.classList.add('hidden');
+            UnitPlanGenerator.elements.generationProgressBarContainer.classList.remove('hidden');
+            UnitPlanGenerator.elements.generationProgressBar.style.width = '0%';
             let progress = 0;
             const interval = setInterval(() => {
                 progress += 15;
-                this.elements.generationProgressBar.style.width = `${Math.min(progress, 100)}%`;
+                UnitPlanGenerator.elements.generationProgressBar.style.width = `${Math.min(progress, 100)}%`;
                 if (progress >= 100) clearInterval(interval);
             }, 100);
         },
 
         hideLoading() {
-            this.elements.loadingIndicator.classList.add('hidden');
-            this.elements.generationProgressBarContainer.classList.add('hidden');
+            UnitPlanGenerator.elements.loadingIndicator.classList.add('hidden');
+            UnitPlanGenerator.elements.generationProgressBarContainer.classList.add('hidden');
         },
 
         displayResults(html) {
-            this.elements.results.innerHTML = html;
-            this.elements.resultsContainer.classList.remove('hidden');
-            this.elements.resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            UnitPlanGenerator.elements.results.innerHTML = html;
+            UnitPlanGenerator.elements.resultsContainer.classList.remove('hidden');
+            UnitPlanGenerator.elements.resultsContainer.scrollIntoView({ behavior: 'smooth' });
         },
 
         showError(message) {
-            this.elements.errorMessage.textContent = message;
-            this.elements.errorMessage.classList.remove('hidden');
+            UnitPlanGenerator.elements.errorMessage.textContent = message;
+            UnitPlanGenerator.elements.errorMessage.classList.remove('hidden');
         },
         
         hideError() {
-            this.elements.errorMessage.classList.add('hidden');
+            UnitPlanGenerator.elements.errorMessage.classList.add('hidden');
         },
         
         displayError(message) {
-            this.elements.results.innerHTML = `<p class="text-red-600 font-medium">${message}</p>`;
-            this.elements.resultsContainer.classList.remove('hidden');
+            UnitPlanGenerator.elements.results.innerHTML = `<p class="text-red-600 font-medium">${message}</p>`;
+            UnitPlanGenerator.elements.resultsContainer.classList.remove('hidden');
         }
     },
 
@@ -575,7 +575,7 @@ const UnitPlanGenerator = {
                 if (gradeLevel === "K-1") {
                     activity.steps = ["Teacher presents a 3-step visual sequence for a simple task.", "Students point to each step as the teacher calls it out.", "Complete the task following the visual plan."];
                 } else {
-                    activity.steps = ["Task: 'Plan 3-4 key events to retell a story about ${interest}.'", "Students use a 'First, Next, Then, Finally' graphic organizer.", "In pairs, students share their plans and give feedback."];
+                    activity.steps = [`Task: 'Plan 3-4 key events to retell a story about ${interest}.'`, "Students use a 'First, Next, Then, Finally' graphic organizer.", "In pairs, students share their plans and give feedback."];
                 }
             } else if (skill.includes("Memory")) {
                 activity.title = `${interest}-Themed Memory Wizards`;
@@ -673,12 +673,11 @@ const UnitPlanGenerator = {
                 generationProgressBar: document.getElementById('generationProgressBar'),
             };
 
-            const boundHandleSkillChange = this.handlers.handleSkillChange.bind(this);
-            this.ui.populateCheckboxes(this.elements.efSkillsContainer, this.config.efSkills, 'efSkills', 'sky', boundHandleSkillChange);
-            this.ui.populateCheckboxes(this.elements.behSkillsContainer, this.config.behSkills, 'behSkills', 'rose', boundHandleSkillChange);
+            this.ui.populateCheckboxes(this.elements.efSkillsContainer, this.config.efSkills, 'efSkills', 'sky', this.handlers.handleSkillChange);
+            this.ui.populateCheckboxes(this.elements.behSkillsContainer, this.config.behSkills, 'behSkills', 'rose', this.handlers.handleSkillChange);
             this.ui.populateModalities();
 
-            this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit.bind(this));
+            this.elements.form.addEventListener('submit', this.handlers.handleFormSubmit);
             this.elements.printButton.addEventListener('click', this.handlers.handlePrint);
             this.elements.exportPdfButton.addEventListener('click', this.handlers.handlePdfExport);
             document.addEventListener('click', this.handlers.handleDocumentClick);
